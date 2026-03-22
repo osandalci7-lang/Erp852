@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.ep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.ep-title{font-size:18px;font-weight:600;color:#323130;}
+.ep-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.ep-btn:hover{background:#106ebe;}
+.ep-tabs{display:flex;gap:0;border-bottom:1px solid #edebe9;margin-bottom:20px;overflow-x:auto;padding:0;list-style:none;}
+.ep-tab{padding:10px 16px;font-size:13px;color:#605e5c;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;}
+.ep-tab:hover{color:#323130;background:#f3f2f1;}
+.ep-tab.active{color:#0078d4;border-bottom-color:#0078d4;font-weight:500;}
+.ep-card{background:#ffffff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;}
+.ep-field{padding:14px 20px;border-bottom:1px solid #edebe9;border-right:1px solid #edebe9;}
+.ep-field:nth-child(3n){border-right:none;}
+.ep-field label{display:block;font-size:11px;color:#a19f9d;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.4px;}
+.ep-field span{font-size:13px;color:#323130;}
+.ep-field a{font-size:13px;color:#0078d4;text-decoration:none;}
+.ep-field a:hover{text-decoration:underline;}
+@media(max-width:900px){
+  .ep-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ep-field:nth-child(3n){border-right:1px solid #edebe9;}
+  .ep-field:nth-child(2n){border-right:none;}
+}
+</style>
+
+<div class="ep-header">
+  <div class="ep-title">Employee Profile</div>
+  {% if has_permission(user, "employee_edit") or has_permission(user, "admin_full_access") %}
+  <a href="/admin/employee/edit/{{ employee[0] }}" class="ep-btn">Edit Employee</a>
+  {% endif %}
+</div>
+
+<div class="ep-tabs">
+  <a class="ep-tab active" href="/admin/employee/{{ employee[0] }}">Personal Details</a>
+  {% if has_permission(current_user, "employee_contracts_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ employee[0] }}/contracts">Contracts</a>
+  {% endif %}
+  {% if has_permission(current_user, "employee_certificates_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ employee[0] }}/certificates">Certificates</a>
+  {% endif %}
+  {% if has_permission(current_user, "employee_health_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ employee[0] }}/health">Health</a>
+  {% endif %}
+  {% if has_permission(current_user, "employee_assets_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ employee[0] }}/assets">Staff Assets</a>
+  {% endif %}
+  {% if has_permission(current_user, "employee_training_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ employee[0] }}/trainings">Training</a>
+  {% endif %}
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-header">Personal Information</div>
+  <div class="ep-grid">
+    <div class="ep-field"><label>ID</label><span>{{ employee[0] }}</span></div>
+    <div class="ep-field"><label>Name</label><span>{{ employee[1] }}</span></div>
+    <div class="ep-field"><label>Username</label><span>{{ employee[2] }}</span></div>
+    <div class="ep-field"><label>Position</label><span>{{ employee[3] }}</span></div>
+    <div class="ep-field"><label>Department</label><span>{{ employee[4] }}</span></div>
+    <div class="ep-field"><label>Email</label><span>{{ employee[5] }}</span></div>
+    <div class="ep-field"><label>Phone</label><span>{{ employee[6] }}</span></div>
+    <div class="ep-field"><label>Status</label><span>{{ employee[7] }}</span></div>
+    <div class="ep-field"><label>Address</label><span>{{ employee[8] }}</span></div>
+    <div class="ep-field"><label>Emergency Contact</label><span>{{ employee[9] }}</span></div>
+    <div class="ep-field"><label>Contract Start</label><span>{{ employee[10] }}</span></div>
+    <div class="ep-field"><label>Contract End</label><span>{{ employee[11] }}</span></div>
+    <div class="ep-field"><label>Company Car</label><span>{{ employee[12] }}</span></div>
+    <div class="ep-field"><label>Vehicle Plate</label><span>{{ employee[13] }}</span></div>
+    <div class="ep-field"><label>Vehicle License</label>
+      {% if employee[14] %}
+        <a href="/static/licenses/{{ employee[14] }}" target="_blank">View Document</a>
+      {% else %}
+        <span style="color:#a19f9d;">No document</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

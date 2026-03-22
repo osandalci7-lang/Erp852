@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-card-body{padding:20px;}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:12px;color:#605e5c;font-weight:500;}
+.form-group input{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#fff;outline:none;box-sizing:border-box;}
+.form-group input:focus{border-color:#0078d4;}
+.form-actions{display:flex;gap:8px;margin-top:20px;}
+.btn-primary{height:32px;padding:0 16px;background:#0078d4;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;}
+.btn-secondary{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-danger{height:32px;padding:0 16px;background:#a4262c;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+@media(max-width:900px){.form-grid{grid-template-columns:1fr;}}
+</style>
+<div class="pg-header">
+  <div class="pg-title">{% if ship %}Edit Ship{% else %}Add Ship{% endif %}</div>
+</div>
+<div class="ep-card">
+  <div class="ep-card-header">Ship Information</div>
+  <div class="ep-card-body">
+    <form method="post" action="{% if ship %}/admin/ship/update/{{ ship[0] }}{% else %}/admin/ship/create{% endif %}">
+      <div class="form-grid">
+        <div class="form-group"><label>Ship Name</label><input type="text" name="ship_name" value="{{ ship[1] if ship else '' }}" required></div>
+        <div class="form-group"><label>Tonnage</label><input type="text" name="tonnage" value="{{ ship[2] if ship else '' }}"></div>
+        <div class="form-group"><label>Flag</label><input type="text" name="flag" value="{{ ship[3] if ship else '' }}"></div>
+        <div class="form-group"><label>Berth / Location</label><input type="text" name="berth_location" value="{{ ship[4] if ship else '' }}"></div>
+        <div class="form-group"><label>Company Name</label><input type="text" name="company_name" value="{{ ship[5] if ship else '' }}"></div>
+        <div class="form-group"><label>Arrival Time</label><input type="text" name="arrival_time" value="{{ ship[6] if ship else '' }}" placeholder="2026-03-16 08:00"></div>
+        <div class="form-group"><label>Estimated Departure</label><input type="text" name="departure_time" value="{{ ship[7] if ship else '' }}" placeholder="2026-03-18 18:00"></div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">{% if ship %}Update Ship{% else %}Save Ship{% endif %}</button>
+        <a href="/admin/ships" class="btn-secondary">Back</a>
+        {% if ship %}
+        <a href="/admin/ship/delete/{{ ship[0] }}" class="btn-danger" onclick="return confirm('Delete this ship?')">Delete Ship</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

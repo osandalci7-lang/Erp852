@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-count{font-size:13px;color:#605e5c;font-weight:400;margin-left:8px;}
+.pg-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pg-select{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#ffffff;cursor:pointer;outline:none;}
+.pg-select:focus{border-color:#0078d4;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.pg-btn:hover{background:#106ebe;}
+.erp-table-wrap{background:#ffffff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;}
+.erp-table{width:100%;border-collapse:collapse;}
+.erp-table th{padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#605e5c;background:#faf9f8;border-bottom:1px solid #edebe9;}
+.erp-table td{padding:10px 16px;font-size:13px;color:#323130;border-bottom:1px solid #edebe9;}
+.erp-table tbody tr:last-child td{border-bottom:none;}
+.erp-table tbody tr{cursor:pointer;}
+.erp-table tbody tr:hover{background:#f3f2f1;}
+.status-badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.status-active{background:#dff6dd;color:#107c10;}
+.status-passive{background:#fde7e9;color:#a4262c;}
+.status-other{background:#f3f2f1;color:#605e5c;}
+@media(max-width:900px){
+  .erp-table-wrap{overflow-x:auto;}
+  .erp-table{white-space:nowrap;}
+}
+</style>
+<div class="pg-header">
+  <div class="pg-title">Employees <span class="pg-count">({{ count }} active)</span></div>
+  <div class="pg-actions">
+    <select class="pg-select" onchange="location=this.value">
+      <option value="/admin/employees">All Status</option>
+      <option value="/admin/employees?status=Active">Active</option>
+      <option value="/admin/employees?status=Passive">Passive</option>
+    </select>
+    <select class="pg-select" onchange="location=this.value">
+      <option value="/admin/employees">All Departments</option>
+      <option value="/admin/employees?department=Operations">Operations</option>
+      <option value="/admin/employees?department=Engineering">Engineering</option>
+      <option value="/admin/employees?department=HSEQ">HSEQ</option>
+    </select>
+    <select class="pg-select" onchange="location=this.value">
+      <option value="/admin/employees">All Positions</option>
+      <option value="/admin/employees?position=Welder">Welder</option>
+      <option value="/admin/employees?position=Fitter">Fitter</option>
+      <option value="/admin/employees?position=Project Manager">Project Manager</option>
+    </select>
+    {% if has_permission(user, "employee_create") %}
+    <a href="/admin/employee/edit/new" class="pg-btn">+ Add Employee</a>
+    {% endif %}
+  </div>
+</div>
+<div class="erp-table-wrap">
+  <table class="erp-table">
+    <thead>
+      <tr>
+        <th>ID</th><th>Name</th><th>Username</th><th>Position</th><th>Department</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for emp in employees %}
+      <tr onclick="window.location='/admin/employee/{{ emp[0] }}'">
+        <td style="color:#605e5c;">{{ emp[0] }}</td>
+        <td style="font-weight:500;">{{ emp[1] or '' }}</td>
+        <td>{{ emp[2] or '' }}</td>
+        <td>{{ emp[3] or '' }}</td>
+        <td>{{ emp[4] or '' }}</td>
+        <td>
+          {% if emp[5] == 'Active' %}<span class="status-badge status-active">Active</span>
+          {% elif emp[5] == 'Passive' %}<span class="status-badge status-passive">Passive</span>
+          {% else %}<span class="status-badge status-other">{{ emp[5] or '-' }}</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

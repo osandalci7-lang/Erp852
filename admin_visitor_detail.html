@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-layout{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-card-body{padding:20px;}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:11px;color:#605e5c;font-weight:500;text-transform:uppercase;letter-spacing:0.4px;}
+.form-group input,.form-group select{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 10px;font-size:13px;color:#323130;background:#fff;outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:#0078d4;}
+.form-actions{display:flex;gap:8px;margin-top:20px;}
+.btn-primary{height:32px;padding:0 16px;background:#0078d4;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;}
+.btn-primary:hover{background:#106ebe;}
+.btn-danger{height:32px;padding:0 16px;background:#a4262c;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-danger:hover{background:#8e1c21;}
+.btn-view{padding:6px 14px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:13px;text-decoration:none;display:inline-block;}
+.info-row{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.info-label{font-size:11px;color:#a19f9d;font-weight:500;text-transform:uppercase;letter-spacing:0.4px;}
+.info-value{font-size:13px;color:#323130;}
+@media(max-width:900px){.pg-layout{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="pg-header">
+  <div class="pg-title">Visitor Detail</div>
+</div>
+
+<div class="pg-layout">
+  <div>
+    <div class="ep-card">
+      <div class="ep-card-header">Visitor Information</div>
+      <div class="ep-card-body">
+        <form method="post" action="/admin/visitor/update/{{ visitor[0] }}">
+          <div class="form-grid">
+            <div class="form-group"><label>Username</label><input type="text" name="username" value="{{ visitor[1] }}"></div>
+            <div class="form-group"><label>Password</label><input type="text" name="password" value="{{ visitor[2] }}"></div>
+            <div class="form-group"><label>Name</label><input type="text" name="name" value="{{ visitor[3] }}"></div>
+            <div class="form-group"><label>Surname</label><input type="text" name="surname" value="{{ visitor[4] }}"></div>
+            <div class="form-group"><label>Mobile Phone</label><input type="text" name="mobile_phone" value="{{ visitor[5] }}"></div>
+            <div class="form-group"><label>Vehicle Plate</label><input type="text" name="vehicle_plate" value="{{ visitor[6] }}"></div>
+            <div class="form-group"><label>Company Name</label><input type="text" name="company_name" value="{{ visitor[8] }}"></div>
+            <div class="form-group"><label>Purpose of Visit</label><input type="text" name="purpose_of_visit" value="{{ visitor[9] }}"></div>
+            <div class="form-group">
+              <label>Safety Completed</label>
+              <select name="safety_completed">
+                <option value="0" {% if visitor[10] == 0 %}selected{% endif %}>Pending</option>
+                <option value="1" {% if visitor[10] == 1 %}selected{% endif %}>Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Update Visitor</button>
+            <a href="/admin/visitor/delete/{{ visitor[0] }}" class="btn-danger" onclick="return confirm('Delete this visitor?')">Delete Visitor</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="ep-card">
+      <div class="ep-card-header">Documents</div>
+      <div class="ep-card-body">
+        <div class="info-row">
+          <span class="info-label">ID Copy</span>
+          {% if visitor[7] %}
+            <a class="btn-view" href="/static/visitor_documents/{{ visitor[7] }}" target="_blank">View Document</a>
+          {% else %}
+            <span class="info-value" style="color:#a19f9d;">No document uploaded.</span>
+          {% endif %}
+        </div>
+        <div class="info-row">
+          <span class="info-label">Created At</span>
+          <span class="info-value">{{ visitor[11] }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

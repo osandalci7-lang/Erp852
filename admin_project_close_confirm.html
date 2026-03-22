@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-card-body{padding:24px;}
+.warn{background:#fde7e9;border:1px solid #f4abba;border-radius:6px;padding:14px 16px;font-size:13px;color:#6e0811;margin-bottom:20px;}
+.form-group{margin-bottom:14px;display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:12px;color:#605e5c;font-weight:500;}
+.form-group input{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;width:100%;box-sizing:border-box;}
+.form-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:16px;border-top:1px solid #edebe9;}
+.btn-outline{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-danger{height:32px;padding:0 20px;background:#a4262c;color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;}
+</style>
+
+<div class="pg-header">
+  <div class="pg-title">Close Project — {{ project.project_code }}</div>
+  <a href="/admin/project/{{ project.id }}" class="btn-outline">Cancel</a>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-header">Confirm Project Closure</div>
+  <div class="ep-card-body">
+    <div class="warn">
+      Once closed, this project will be <strong>locked</strong> and cannot be edited. The ship will be removed from the active yard list and moved to project history.
+    </div>
+    <form method="post" action="/admin/project/{{ project.id }}/close">
+      <div class="form-group">
+        <label>Exit Date (date ship left the yard) *</label>
+        <input type="date" name="exit_date" required>
+      </div>
+      <div class="form-footer">
+        <a href="/admin/project/{{ project.id }}" class="btn-outline">Cancel</a>
+        <button type="submit" class="btn-danger">Close Project & Lock</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

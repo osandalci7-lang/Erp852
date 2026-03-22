@@ -1,0 +1,171 @@
+{% extends "public_base.html" %}
+{% block content %}
+<style>
+.reg-wrap{max-width:820px;margin:40px auto;background:#fff;padding:36px;border-radius:10px;border:1px solid #edebe9;}
+.reg-title{font-size:22px;font-weight:600;color:#0b1f4d;margin:0 0 8px;}
+.reg-sub{font-size:14px;color:#605e5c;margin:0 0 28px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:13px;font-weight:500;color:#323130;}
+.form-group input,.form-group select{height:38px;border:1px solid #edebe9;border-radius:6px;padding:0 12px;font-size:13px;color:#323130;width:100%;box-sizing:border-box;}
+.form-group input:focus,.form-group select:focus{border-color:#0078d4;outline:none;}
+.form-group input[type=file]{height:auto;padding:8px 12px;}
+.info-box{background:#f0f6ff;border:1px solid #c7e0f4;border-radius:6px;padding:12px 16px;font-size:13px;color:#0078d4;margin-top:6px;display:none;}
+.project-box{background:#dff6dd;border:1px solid #9fd89f;border-radius:6px;padding:12px 16px;font-size:13px;color:#107c10;margin-top:6px;display:none;}
+.btn-submit{background:#0b1f4d;color:white;border:none;padding:12px 28px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-top:20px;}
+.full{grid-column:1/-1;}
+.divider{grid-column:1/-1;border:none;border-top:1px solid #edebe9;margin:8px 0;}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="reg-wrap">
+  <div class="reg-title">Customer Registration</div>
+  <div class="reg-sub">Please complete the form below to register as a customer.</div>
+
+  <form method="post" action="/customer/register" enctype="multipart/form-data">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Username *</label>
+        <input type="text" name="username" required>
+      </div>
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" name="password" required>
+      </div>
+      <div class="form-group">
+        <label>First Name *</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="form-group">
+        <label>Last Name *</label>
+        <input type="text" name="surname" required>
+      </div>
+      <div class="form-group">
+        <label>Mobile Phone *</label>
+        <input type="text" name="mobile_phone" required>
+      </div>
+      <div class="form-group">
+        <label>Vehicle Plate</label>
+        <input type="text" name="vehicle_plate">
+      </div>
+
+      <hr class="divider">
+
+      <div class="form-group full">
+        <label>Company *</label>
+        <select name="company_id" id="company_select" onchange="onCompanyChange(this)" required>
+          <option value="">— Select your company —</option>
+          {% for co in companies %}
+          <option value="{{ co.id }}" data-name="{{ co.name }}">{{ co.name }}</option>
+          {% endfor %}
+        </select>
+        <div class="info-box" id="company_info"></div>
+        <input type="hidden" name="company_name" id="company_name_hidden">
+      </div>
+
+      <!-- Aktif Proje / Gemi seçimi -->
+      <div class="form-group full" id="project_group" style="display:none;">
+        <label>Your Active Project / Ship</label>
+        <select name="ship_name" id="project_select" onchange="onProjectChange(this)">
+          <option value="">— Select your project —</option>
+        </select>
+        <div class="project-box" id="project_info"></div>
+      </div>
+
+      <div class="form-group full">
+        <label>Purpose of Visit *</label>
+        <input type="text" name="purpose_of_visit" required placeholder="e.g. Ship owner, Superintendent, Agent...">
+      </div>
+
+      <div class="form-group full">
+        <label>ID Copy *</label>
+        <input type="file" name="id_copy" required accept="image/*,.pdf">
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit">Register</button>
+  </form>
+</div>
+
+<script>
+function onCompanyChange(sel) {
+  var opt = sel.options[sel.selectedIndex];
+  var info = document.getElementById('company_info');
+  var hidden = document.getElementById('company_name_hidden');
+  var projGroup = document.getElementById('project_group');
+  var projSel = document.getElementById('project_select');
+
+  if(!opt.value) {
+    hidden.value = '';
+    info.style.display = 'none';
+    projGroup.style.display = 'none';
+    return;
+  }
+
+  hidden.value = opt.dataset.name || opt.text;
+  info.style.display = 'block';
+  info.textContent = 'Loading projects...';
+
+  fetch('/api/company/' + opt.value + '/active-projects')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      projSel.innerHTML = '<option value="">— Select your project —</option>';
+      var items = [];
+
+      // Aktif projeleri ekle
+      if(data.projects && data.projects.length > 0) {
+        data.projects.forEach(function(p){
+          var o = document.createElement('option');
+          o.value = p.ship_name || '';
+          o.textContent = (p.ship_name || 'Unknown ship') + ' — ' + p.project_title;
+          o.dataset.type = 'project';
+          o.dataset.info = 'Active project: ' + p.project_title +
+            (p.entry_date ? ' | Entry: ' + p.entry_date : '') +
+            (p.berth ? ' | Berth: ' + p.berth : '') +
+            ' | Status: ' + p.status;
+          projSel.appendChild(o);
+          items.push(p);
+        });
+      }
+
+      // Kayıtlı gemiler (projesi olmayanlar)
+      if(data.ships && data.ships.length > 0) {
+        data.ships.forEach(function(s){
+          // Projede yoksa ekle
+          var inProject = data.projects.some(function(p){ return p.ship_name === s.ship_name; });
+          if(!inProject) {
+            var o = document.createElement('option');
+            o.value = s.ship_name;
+            o.textContent = s.ship_name + (s.ship_type ? ' (' + s.ship_type + ')' : '');
+            o.dataset.type = 'ship';
+            o.dataset.info = 'Registered ship — no active project at this time.';
+            projSel.appendChild(o);
+          }
+        });
+      }
+
+      if(projSel.options.length > 1) {
+        projGroup.style.display = 'flex';
+        info.textContent = 'Company linked — ' + (data.projects.length) + ' active project(s) found.';
+      } else {
+        projGroup.style.display = 'none';
+        info.textContent = 'Company linked — no active projects found.';
+      }
+    }).catch(function(){
+      info.textContent = 'Company selected.';
+      projGroup.style.display = 'none';
+    });
+}
+
+function onProjectChange(sel) {
+  var opt = sel.options[sel.selectedIndex];
+  var info = document.getElementById('project_info');
+  if(opt.value && opt.dataset.info) {
+    info.style.display = 'block';
+    info.textContent = opt.dataset.info;
+  } else {
+    info.style.display = 'none';
+  }
+}
+</script>
+{% endblock %}

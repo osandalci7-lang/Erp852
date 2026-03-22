@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.erp-table-wrap{background:#fff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;}
+.erp-table{width:100%;border-collapse:collapse;}
+.erp-table th{padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#605e5c;background:#faf9f8;border-bottom:1px solid #edebe9;}
+.erp-table td{padding:10px 16px;font-size:13px;color:#323130;border-bottom:1px solid #edebe9;}
+.erp-table tbody tr:last-child td{border-bottom:none;}
+.erp-table tbody tr:hover{background:#f3f2f1;cursor:pointer;}
+.btn-view{padding:4px 12px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:12px;text-decoration:none;}
+@media(max-width:900px){.erp-table-wrap{overflow-x:auto;}.erp-table{white-space:nowrap;}}
+</style>
+<div class="pg-header"><div class="pg-title">Customers</div></div>
+<div class="erp-table-wrap"><table class="erp-table">
+<thead><tr><th>ID</th><th>Name</th><th>Surname</th><th>Company</th><th>Mobile</th><th></th></tr></thead>
+<tbody>
+{% for customer in customers %}
+<tr onclick="window.location='/admin/customer/{{ customer[0] }}'">
+<td style="color:#605e5c;">{{ customer[0] }}</td>
+<td style="font-weight:500;">{{ customer[3] }}</td>
+<td>{{ customer[4] }}</td><td>{{ customer[8] }}</td><td>{{ customer[5] }}</td>
+<td><a class="btn-view" href="/admin/customer/{{ customer[0] }}">View</a></td>
+</tr>
+{% endfor %}
+{% if not customers %}<tr><td colspan="6" style="text-align:center;color:#a19f9d;padding:24px;">No customers yet.</td></tr>{% endif %}
+</tbody></table></div>
+{% endblock %}

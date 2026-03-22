@@ -1,0 +1,14 @@
+<style>
+.ep-tabs{display:flex;gap:0;border-bottom:1px solid #edebe9;margin-bottom:20px;overflow-x:auto;padding:0;}
+.ep-tab{padding:10px 16px;font-size:13px;color:#605e5c;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;display:inline-block;}
+.ep-tab:hover{color:#323130;background:#f3f2f1;}
+.ep-tab.active{color:#0078d4;border-bottom-color:#0078d4;font-weight:500;}
+</style>
+<div class="ep-tabs">
+  <a class="ep-tab {% if request.url.path == '/admin/employee/' ~ emp_id|string %}active{% endif %}" href="/admin/employee/{{ emp_id }}">Personal Details</a>
+  <a class="ep-tab {% if '/contracts' in request.url.path %}active{% endif %}" href="/admin/employee/{{ emp_id }}/contracts">Contracts</a>
+  <a class="ep-tab {% if '/certificates' in request.url.path %}active{% endif %}" href="/admin/employee/{{ emp_id }}/certificates">Certificates</a>
+  <a class="ep-tab {% if '/health' in request.url.path %}active{% endif %}" href="/admin/employee/{{ emp_id }}/health">Health</a>
+  <a class="ep-tab {% if '/assets' in request.url.path %}active{% endif %}" href="/admin/employee/{{ emp_id }}/assets">Staff Assets</a>
+  <a class="ep-tab {% if '/training' in request.url.path %}active{% endif %}" href="/admin/employee/{{ emp_id }}/trainings">Training</a>
+</div>

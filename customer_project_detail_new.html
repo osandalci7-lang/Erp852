@@ -1,0 +1,196 @@
+{% extends "visitor_portal_base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-subtitle{font-size:13px;color:#605e5c;margin-left:8px;}
+.back-link{font-size:13px;color:#0078d4;text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-bottom:12px;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;margin-bottom:16px;overflow:hidden;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;display:flex;justify-content:space-between;align-items:center;}
+.ep-card-body{padding:20px;}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+.info-field{padding:12px 20px;border-bottom:1px solid #edebe9;border-right:1px solid #edebe9;}
+.info-field:nth-child(3n){border-right:none;}
+.info-label{font-size:11px;color:#a19f9d;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;}
+.info-value{font-size:13px;color:#323130;font-weight:500;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.b-open{background:#dff6dd;color:#107c10;}
+.b-progress{background:#fff4ce;color:#835b00;}
+.b-closed{background:#fde7e9;color:#a4262c;}
+.b-waiting{background:#f3f2f1;color:#605e5c;}
+.b-approved{background:#dff6dd;color:#107c10;}
+.b-pending{background:#fff4ce;color:#835b00;}
+.b-paid{background:#dff6dd;color:#107c10;}
+.b-draft{background:#f3f2f1;color:#605e5c;}
+.note-item{padding:14px 0;border-bottom:1px solid #edebe9;}
+.note-item:last-child{border-bottom:none;}
+.note-type{font-size:12px;font-weight:600;color:#0078d4;}
+.note-text{font-size:13px;color:#323130;margin:6px 0;white-space:pre-wrap;}
+.note-date{font-size:11px;color:#a19f9d;}
+.doc-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #edebe9;flex-wrap:wrap;gap:8px;}
+.doc-item:last-child{border-bottom:none;}
+.btn-view{padding:4px 12px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:12px;text-decoration:none;}
+.btn-dl{padding:4px 12px;background:#dff6dd;color:#107c10;border:1px solid #9fd89f;border-radius:4px;font-size:12px;text-decoration:none;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.form-group label{font-size:12px;color:#605e5c;font-weight:500;}
+.form-group input,.form-group select{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;width:100%;box-sizing:border-box;}
+.form-group input[type=file]{height:auto;padding:6px 8px;}
+.btn-primary{height:32px;padding:0 16px;background:#0078d4;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;}
+.erp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.erp-table th{background:#faf9f8;padding:9px 14px;text-align:left;border-bottom:1px solid #edebe9;font-weight:600;color:#605e5c;font-size:12px;}
+.erp-table td{padding:9px 14px;border-bottom:1px solid #edebe9;color:#323130;}
+@media(max-width:700px){.info-grid{grid-template-columns:1fr 1fr;}.two-col{grid-template-columns:1fr;}}
+</style>
+
+<a href="/customer" class="back-link">← Back to Dashboard</a>
+
+<div class="pg-header">
+  <div>
+    <div class="pg-title">{{ project.project_title or project.project_code }}
+      <span class="pg-subtitle">{{ project.ship_name or '' }}</span>
+    </div>
+  </div>
+  {% if project.status == 'Open' %}<span class="badge b-open">Open</span>
+  {% elif project.status == 'In Progress' %}<span class="badge b-progress">In Progress</span>
+  {% elif project.status == 'Closed' %}<span class="badge b-closed">Closed</span>
+  {% else %}<span class="badge b-waiting">{{ project.status }}</span>{% endif %}
+</div>
+
+<!-- Project Info -->
+<div class="ep-card">
+  <div class="ep-card-header">Project Information</div>
+  <div class="info-grid">
+    <div class="info-field"><div class="info-label">Ship</div><div class="info-value">{{ project.ship_name or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Tonnage</div><div class="info-value">{{ project.tonnage or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Flag</div><div class="info-value">{{ project.flag or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Berth</div><div class="info-value">{{ project.berth or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Entry Date</div><div class="info-value">{{ project.entry_date or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Exit Date</div><div class="info-value">{{ project.exit_date or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Company</div><div class="info-value">{{ project.company_name or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Project Code</div><div class="info-value">{{ project.project_code or '-' }}</div></div>
+    <div class="info-field"><div class="info-label">Status</div><div class="info-value">{{ project.status or '-' }}</div></div>
+  </div>
+</div>
+
+<!-- Invoices -->
+{% if invoices %}
+<div class="ep-card">
+  <div class="ep-card-header">Invoices</div>
+  <table class="erp-table">
+    <thead><tr><th>Invoice No</th><th>Date</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for inv in invoices %}
+    <tr>
+      <td style="font-weight:500;">{{ inv[1] }}</td>
+      <td>{{ inv[2] or '-' }}</td>
+      <td>{{ inv[3] or '-' }}</td>
+      <td style="font-weight:600;">€ {{ "{:,.2f}".format(inv[5] or 0) }}</td>
+      <td>{% if inv[4]=='paid' %}<span class="badge b-paid">Paid</span>
+          {% else %}<span class="badge b-draft">{{ inv[4] }}</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- Notes & Upload -->
+<div class="two-col">
+  <div class="ep-card">
+    <div class="ep-card-header">Notes & Updates</div>
+    <div class="ep-card-body" style="padding:0 20px;">
+      {% if notes %}
+        {% for note in notes %}
+        <div class="note-item">
+          <div class="note-type">{{ note[1] }} — {{ note[0] }}</div>
+          <div class="note-text">{{ note[2] }}</div>
+          <div class="note-date">{{ note[3] }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="color:#a19f9d;font-size:13px;padding:16px 0;">No notes yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="ep-card">
+    <div class="ep-card-header">Upload Document</div>
+    <div class="ep-card-body">
+      <form method="post" action="/customer/project/{{ project.id }}/upload" enctype="multipart/form-data">
+        <div class="form-group"><label>Title</label><input type="text" name="title" required></div>
+        <div class="form-group"><label>Description</label><input type="text" name="description"></div>
+        <div class="form-group"><label>File</label><input type="file" name="file" required></div>
+        <button type="submit" class="btn-primary">Upload</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Documents -->
+<div class="ep-card">
+  <div class="ep-card-header">Project Documents</div>
+  <div class="ep-card-body" style="padding:0 20px;">
+    {% if documents %}
+      {% for doc in documents %}
+      <div class="doc-item">
+        <div>
+          <div style="font-size:13px;font-weight:500;">{{ doc[2] }}</div>
+          <div style="font-size:11px;color:#a19f9d;">{{ doc[1] }} · {{ doc[5] }}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <a class="btn-view" href="/static/project_documents/{{ doc[3] }}" target="_blank">View</a>
+          <a class="btn-dl" href="/static/project_documents/{{ doc[3] }}" download>Download</a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="color:#a19f9d;font-size:13px;padding:16px 0;">No documents shared yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Permits -->
+<div class="ep-card">
+  <div class="ep-card-header">Permits</div>
+  <div class="ep-card-body" style="padding:0 20px;">
+    {% if permits %}
+      {% for p in permits %}
+      <div class="doc-item">
+        <div>
+          <div style="font-size:13px;font-weight:500;">{{ p[1]|replace('_',' ')|title }} — {{ p[2] or '-' }}</div>
+          <div style="font-size:11px;color:#a19f9d;">By: {{ p[5] or '-' }} · {{ p[4] or '-' }}</div>
+        </div>
+        {% if p[3]=='approved' %}<span class="badge b-approved">Approved</span>
+        {% elif p[3]=='rejected' %}<span class="badge b-closed">Rejected</span>
+        {% else %}<span class="badge b-pending">Pending</span>{% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="color:#a19f9d;font-size:13px;padding:16px 0;">No permits.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Customer Uploads -->
+{% if customer_uploads %}
+<div class="ep-card">
+  <div class="ep-card-header">My Uploaded Documents</div>
+  <div class="ep-card-body" style="padding:0 20px;">
+    {% for up in customer_uploads %}
+    <div class="doc-item">
+      <div>
+        <div style="font-size:13px;font-weight:500;">{{ up[1] }}</div>
+        <div style="font-size:11px;color:#a19f9d;">{{ up[2] or '' }} · {{ up[4] }}</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <a class="btn-view" href="/static/customer_project_uploads/{{ up[3] }}" target="_blank">View</a>
+        <a class="btn-dl" href="/static/customer_project_uploads/{{ up[3] }}" download>Download</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

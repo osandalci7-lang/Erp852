@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.pg-btn-green{height:36px;padding:0 20px;background:#107c10;color:white;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer;}
+.pg-btn-outline{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-card-body{padding:24px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.info-item label{font-size:11px;color:#605e5c;display:block;margin-bottom:3px;}
+.info-item .val{font-size:14px;color:#323130;font-weight:500;}
+.form-group{margin-bottom:14px;}
+.form-group label{font-size:12px;color:#605e5c;display:block;margin-bottom:4px;font-weight:500;}
+.form-group input,.form-group select{height:36px;border:1px solid #edebe9;border-radius:4px;padding:0 10px;font-size:13px;width:100%;box-sizing:border-box;}
+.form-group input:focus{border-color:#0078d4;outline:none;}
+.warn-box{background:#fff4ce;border:1px solid #f0d060;border-radius:6px;padding:14px 16px;font-size:13px;color:#633806;margin-bottom:20px;}
+.form-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #edebe9;}
+</style>
+
+<div class="pg-header">
+  <div class="pg-title">Make Order — {{ quote.quote_number }}</div>
+  <a href="/admin/quotes/{{ quote.id }}/edit" class="pg-btn-outline">Back</a>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-header">Quote Summary</div>
+  <div class="ep-card-body">
+    <div class="info-grid">
+      <div class="info-item"><label>Quote Number</label><div class="val">{{ quote.quote_number }}</div></div>
+      <div class="info-item"><label>Ship Name</label><div class="val">{{ quote.ship_name or '-' }}</div></div>
+      <div class="info-item"><label>Quote Date</label><div class="val">{{ quote.quote_date or '-' }}</div></div>
+      <div class="info-item"><label>Status</label><div class="val">{{ quote.status }}</div></div>
+    </div>
+
+    <div class="warn-box">
+      Bu işlem quote'u <strong>Accepted</strong> olarak işaretler, otomatik bir proje oluşturur
+      ve gemiyi tersanedeki gemiler ekranına ekler. Bu işlem geri alınamaz.
+    </div>
+
+    <form method="post" action="/admin/quotes/{{ quote.id }}/make-order">
+      <div class="form-group">
+        <label>Giriş Tarihi (Entry Date) *</label>
+        <input type="date" name="entry_date" value="{{ today }}" required>
+      </div>
+      <div class="form-group">
+        <label>Yanaşma Yeri (Berth / Dock)</label>
+        <input type="text" name="berth" placeholder="örn. DOK A, KIZAK, İSKELE...">
+      </div>
+      <div class="form-footer">
+        <a href="/admin/quotes/{{ quote.id }}/edit" class="pg-btn-outline">İptal</a>
+        <button type="submit" class="pg-btn-green">Make Order — Projeyi Aç</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

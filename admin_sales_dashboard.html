@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-title{font-size:18px;font-weight:600;color:#323130;margin-bottom:20px;}
+.sales-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px;}
+.module-card{background:#fff;border:1px solid #edebe9;border-radius:6px;padding:20px;text-decoration:none;display:flex;flex-direction:column;gap:8px;transition:box-shadow 0.15s;}
+.module-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.module-icon{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.module-title{font-size:14px;font-weight:600;color:#323130;}
+.module-sub{font-size:12px;color:#605e5c;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.kpi{background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:14px 16px;}
+.kpi-label{font-size:11px;color:#605e5c;margin-bottom:4px;}
+.kpi-val{font-size:20px;font-weight:600;color:#323130;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-card-body{padding:0;}
+.erp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.erp-table th{background:#faf9f8;color:#605e5c;padding:9px 16px;text-align:left;border-bottom:1px solid #edebe9;font-weight:600;}
+.erp-table td{padding:9px 16px;border-bottom:1px solid #edebe9;color:#323130;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.b-draft{background:#f3f2f1;color:#605e5c;}
+.b-sent{background:#eff6fc;color:#0078d4;}
+.b-accepted{background:#dff6dd;color:#107c10;}
+.b-rejected{background:#fde7e9;color:#a4262c;}
+.b-revised{background:#fff4ce;color:#835b00;}
+</style>
+
+<div class="pg-title">Sales Management</div>
+
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Companies</div><div class="kpi-val">{{ company_count }}</div></div>
+  <div class="kpi"><div class="kpi-label">Total Quotes</div><div class="kpi-val">{{ quote_count }}</div></div>
+  <div class="kpi"><div class="kpi-label">Draft</div><div class="kpi-val">{{ draft_count }}</div></div>
+  <div class="kpi"><div class="kpi-label">Accepted</div><div class="kpi-val">{{ accepted_count }}</div></div>
+</div>
+
+<div class="sales-grid">
+  <a href="/admin/quotes" class="module-card">
+    <div class="module-icon" style="background:#eff6fc;">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#0078d4" stroke-width="1.2" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 6h6M5 9h4"/></svg>
+    </div>
+    <div class="module-title">Quotes</div>
+    <div class="module-sub">Manage all quotes</div>
+  </a>
+  <a href="/admin/companies" class="module-card">
+    <div class="module-icon" style="background:#dff6dd;">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#107c10" stroke-width="1.2" stroke-linecap="round"><rect x="1" y="4" width="14" height="10" rx="1"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M8 9v2"/></svg>
+    </div>
+    <div class="module-title">Companies</div>
+    <div class="module-sub">Customer companies</div>
+  </a>
+  <a href="/admin/projects" class="module-card">
+    <div class="module-icon" style="background:#fff4ce;">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#835b00" stroke-width="1.2" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 5h6M5 8h6M5 11h4"/></svg>
+    </div>
+    <div class="module-title">Projects</div>
+    <div class="module-sub">Active projects</div>
+  </a>
+  <a href="/admin/sales/planning" class="module-card" style="opacity:0.5;pointer-events:none;">
+    <div class="module-icon" style="background:#f3f2f1;">
+      <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="#605e5c" stroke-width="1.2" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M5 5h6M5 8h3"/><circle cx="11" cy="11" r="2"/></svg>
+    </div>
+    <div class="module-title">Planning</div>
+    <div class="module-sub">Coming soon</div>
+  </a>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-header">Recent Quotes</div>
+  <div class="ep-card-body">
+    <table class="erp-table">
+      <thead><tr><th>Quote No</th><th>Company</th><th>Ship</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for q in recent_quotes %}
+      <tr>
+        <td><a href="/admin/quotes" style="color:#0078d4;text-decoration:none;">{{ q.quote_number }}</a></td>
+        <td>{{ q.company_name or '-' }}</td>
+        <td>{{ q.ship_name or '-' }}</td>
+        <td>{{ q.quote_date or '-' }}</td>
+        <td>
+          {% if q.status == 'draft' %}<span class="badge b-draft">Draft</span>
+          {% elif q.status == 'sent' %}<span class="badge b-sent">Sent</span>
+          {% elif q.status == 'accepted' %}<span class="badge b-accepted">Accepted</span>
+          {% elif q.status == 'rejected' %}<span class="badge b-rejected">Rejected</span>
+          {% elif q.status == 'revised' %}<span class="badge b-revised">Revised</span>
+          {% else %}<span class="badge b-draft">{{ q.status }}</span>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" style="text-align:center;color:#a19f9d;padding:20px;">No quotes yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

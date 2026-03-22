@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-actions{display:flex;gap:8px;}
+.pg-btn{height:32px;padding:0 14px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.pg-btn:hover{background:#106ebe;}
+.pg-btn-outline{height:32px;padding:0 14px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.pg-btn-outline:hover{background:#f3f2f1;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:14px 16px;}
+.kpi-label{font-size:11px;color:#605e5c;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;}
+.kpi-val{font-size:18px;font-weight:600;color:#323130;}
+.fin-wrap{overflow-x:auto;border:1px solid #edebe9;border-radius:6px;background:#fff;}
+.fin-table{width:100%;border-collapse:collapse;font-size:12px;}
+.fin-table th{background:#faf9f8;color:#605e5c;padding:8px 10px;text-align:center;border-bottom:1px solid #edebe9;font-weight:600;white-space:nowrap;}
+.fin-table td{padding:7px 10px;border-bottom:1px solid #edebe9;text-align:center;vertical-align:middle;}
+.fin-table tbody tr:hover td{background:#f3f2f1;}
+.section-row td{background:#f0f6ff;color:#0078d4;font-weight:600;font-size:13px;text-align:left;padding:8px 10px;}
+.total-row td{background:#eff6fc;font-weight:600;color:#323130;}
+.grand-row td{background:#0078d4;color:white;font-weight:600;}
+.profit-pos{color:#107c10;font-weight:600;}
+.profit-neg{color:#a4262c;font-weight:600;}
+.btn-sm{padding:3px 8px;border-radius:4px;border:none;cursor:pointer;font-size:11px;font-weight:500;}
+.btn-edit{background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;}
+.btn-del{background:#fde7e9;color:#a4262c;border:1px solid #f4abba;text-decoration:none;display:inline-block;}
+.badge-odendi{background:#dff6dd;color:#107c10;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
+.badge-bekliyor{background:#fff4ce;color:#835b00;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
+.badge-kesilmedi{background:#fde7e9;color:#a4262c;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:flex-start;justify-content:center;padding-top:60px;}
+.modal.open{display:flex;}
+.modal-box{background:white;border-radius:6px;padding:24px;width:95%;max-width:680px;max-height:85vh;overflow-y:auto;border:1px solid #edebe9;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #edebe9;}
+.modal-title{font-size:14px;font-weight:600;color:#323130;}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:#605e5c;line-height:1;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:12px;color:#605e5c;font-weight:500;}
+.form-group input,.form-group select{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#fff;outline:none;box-sizing:border-box;}
+.form-group input:focus,.form-group select:focus{border-color:#0078d4;}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid #edebe9;}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr);}.form-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="pg-header">
+  <div class="pg-title">Financial Dashboard</div>
+  <div class="pg-actions">
+    <button class="pg-btn" onclick="openAddModal()">+ New Record</button>
+    <a href="/admin/financial/export" class="pg-btn-outline">Export Excel</a>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-val">€ {{ "{:,.0f}".format(genel.kesilen_hesap) }}</div></div>
+  <div class="kpi"><div class="kpi-label">Total VAT</div><div class="kpi-val">€ {{ "{:,.0f}".format(genel.kdv) }}</div></div>
+  <div class="kpi"><div class="kpi-label">Total Cost</div><div class="kpi-val">€ {{ "{:,.0f}".format(genel.maliyet) }}</div></div>
+  <div class="kpi"><div class="kpi-label">Net Profit</div><div class="kpi-val {{ 'profit-pos' if genel.net_kar >= 0 else 'profit-neg' }}">€ {{ "{:,.0f}".format(genel.net_kar) }}</div></div>
+</div>
+
+<div class="fin-wrap">
+<table class="fin-table">
+  <thead>
+    <tr>
+      <th>#</th><th>Ship Name</th><th>Company</th><th>Type</th>
+      <th>Entry</th><th>Exit</th><th>Days</th><th>Work Done</th>
+      <th>Revenue</th><th>VAT</th><th>Cost</th><th>Net Profit</th>
+      <th>Invoice</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for bolum in bolumler %}
+    <tr class="section-row"><td colspan="14">{{ bolum }}</td></tr>
+    {% for r in data[bolum] %}
+    <tr>
+      <td>{{ r.sira or '' }}</td>
+      <td style="text-align:left;font-weight:500;">{{ r.gemi_adi or '' }}</td>
+      <td style="text-align:left;">{{ r.firma_adi or '' }}</td>
+      <td>{{ r.gemi_tipi or '' }}</td>
+      <td>{{ r.giris_tarihi or '' }}</td>
+      <td>{{ r.cikis_tarihi or '' }}</td>
+      <td>{{ r.gun_sayisi or '' }}</td>
+      <td style="text-align:left;">{{ r.yapilan_is or '' }}</td>
+      <td>{{ "{:,.2f}".format(r.kesilen_hesap or 0) }}</td>
+      <td>{{ "{:,.2f}".format(r.kdv or 0) }}</td>
+      <td>{{ "{:,.2f}".format(r.maliyet or 0) }}</td>
+      <td class="{{ 'profit-pos' if r.net_kar >= 0 else 'profit-neg' }}">{{ "{:,.2f}".format(r.net_kar) }}</td>
+      <td>
+        {% if r.fatura_durumu == 'odendi' %}<span class="badge-odendi">Paid</span>
+        {% elif r.fatura_durumu == 'bekliyor' %}<span class="badge-bekliyor">Pending</span>
+        {% elif r.fatura_durumu == 'kesilmedi' %}<span class="badge-kesilmedi">Not Issued</span>
+        {% else %}-{% endif %}
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="btn-sm btn-edit" onclick="openEditModal(this)" data-record='{{ r | tojson | replace("'", "&#39;") }}'>Edit</button>
+        <a href="/admin/financial/{{ r.id }}/delete" onclick="return confirm('Delete this record?')" class="btn-sm btn-del">Del</a>
+      </td>
+    </tr>
+    {% endfor %}
+    <tr class="total-row">
+      <td colspan="8" style="text-align:right;">{{ bolum }} Total:</td>
+      <td>{{ "{:,.2f}".format(totals[bolum].kesilen_hesap) }}</td>
+      <td>{{ "{:,.2f}".format(totals[bolum].kdv) }}</td>
+      <td>{{ "{:,.2f}".format(totals[bolum].maliyet) }}</td>
+      <td class="{{ 'profit-pos' if totals[bolum].net_kar >= 0 else 'profit-neg' }}">{{ "{:,.2f}".format(totals[bolum].net_kar) }}</td>
+      <td colspan="2"></td>
+    </tr>
+  {% endfor %}
+    <tr class="grand-row">
+      <td colspan="8" style="text-align:right;">GRAND TOTAL:</td>
+      <td>€ {{ "{:,.2f}".format(genel.kesilen_hesap) }}</td>
+      <td>€ {{ "{:,.2f}".format(genel.kdv) }}</td>
+      <td>€ {{ "{:,.2f}".format(genel.maliyet) }}</td>
+      <td>€ {{ "{:,.2f}".format(genel.net_kar) }}</td>
+      <td colspan="2"></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal" id="addModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">New Record</span>
+      <button class="modal-close" onclick="closeModal('addModal')">&times;</button>
+    </div>
+    <form method="post" action="/admin/financial/add">
+      <div class="form-grid">
+        <div class="form-group"><label>Section *</label>
+          <select name="bolum" required>{% for b in bolumler %}<option value="{{ b }}">{{ b }}</option>{% endfor %}</select></div>
+        <div class="form-group"><label>Order</label><input type="number" name="sira"></div>
+        <div class="form-group"><label>Ship Name</label><input type="text" name="gemi_adi"></div>
+        <div class="form-group"><label>Company</label><input type="text" name="firma_adi"></div>
+        <div class="form-group"><label>DWT</label><input type="text" name="dwt"></div>
+        <div class="form-group"><label>Ship Type</label><input type="text" name="gemi_tipi"></div>
+        <div class="form-group"><label>Entry Date</label><input type="date" name="giris_tarihi"></div>
+        <div class="form-group"><label>Exit Date</label><input type="date" name="cikis_tarihi"></div>
+        <div class="form-group"><label>Days</label><input type="number" name="gun_sayisi"></div>
+        <div class="form-group"><label>Berth No</label><input type="text" name="kizak_no"></div>
+        <div class="form-group" style="grid-column:span 2;"><label>Work Done</label><input type="text" name="yapilan_is"></div>
+        <div class="form-group"><label>Revenue (€)</label><input type="number" step="0.01" name="kesilen_hesap" value="0"></div>
+        <div class="form-group"><label>VAT (€)</label><input type="number" step="0.01" name="kdv" value="0"></div>
+        <div class="form-group"><label>Cost (€)</label><input type="number" step="0.01" name="maliyet" value="0"></div>
+        <div class="form-group"><label>Invoice Status</label>
+          <select name="fatura_durumu">
+            <option value="">-</option>
+            <option value="odendi">Paid</option>
+            <option value="bekliyor">Pending</option>
+            <option value="kesilmedi">Not Issued</option>
+          </select></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="pg-btn-outline" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="pg-btn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Edit Record</span>
+      <button class="modal-close" onclick="closeModal('editModal')">&times;</button>
+    </div>
+    <form method="post" id="editForm">
+      <div class="form-grid">
+        <div class="form-group"><label>Section *</label>
+          <select name="bolum" id="e_bolum" required>{% for b in bolumler %}<option value="{{ b }}">{{ b }}</option>{% endfor %}</select></div>
+        <div class="form-group"><label>Order</label><input type="number" name="sira" id="e_sira"></div>
+        <div class="form-group"><label>Ship Name</label><input type="text" name="gemi_adi" id="e_gemi_adi"></div>
+        <div class="form-group"><label>Company</label><input type="text" name="firma_adi" id="e_firma_adi"></div>
+        <div class="form-group"><label>DWT</label><input type="text" name="dwt" id="e_dwt"></div>
+        <div class="form-group"><label>Ship Type</label><input type="text" name="gemi_tipi" id="e_gemi_tipi"></div>
+        <div class="form-group"><label>Entry Date</label><input type="date" name="giris_tarihi" id="e_giris"></div>
+        <div class="form-group"><label>Exit Date</label><input type="date" name="cikis_tarihi" id="e_cikis"></div>
+        <div class="form-group"><label>Days</label><input type="number" name="gun_sayisi" id="e_gun"></div>
+        <div class="form-group"><label>Berth No</label><input type="text" name="kizak_no" id="e_kizak"></div>
+        <div class="form-group" style="grid-column:span 2;"><label>Work Done</label><input type="text" name="yapilan_is" id="e_is"></div>
+        <div class="form-group"><label>Revenue (€)</label><input type="number" step="0.01" name="kesilen_hesap" id="e_hesap"></div>
+        <div class="form-group"><label>VAT (€)</label><input type="number" step="0.01" name="kdv" id="e_kdv"></div>
+        <div class="form-group"><label>Cost (€)</label><input type="number" step="0.01" name="maliyet" id="e_maliyet"></div>
+        <div class="form-group"><label>Invoice Status</label>
+          <select name="fatura_durumu" id="e_fatura">
+            <option value="">-</option>
+            <option value="odendi">Paid</option>
+            <option value="bekliyor">Pending</option>
+            <option value="kesilmedi">Not Issued</option>
+          </select></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="pg-btn-outline" onclick="closeModal('editModal')">Cancel</button>
+        <button type="submit" class="pg-btn">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAddModal(){ document.getElementById('addModal').style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+function openEditModal(btn){
+  var r = JSON.parse(btn.getAttribute('data-record'));
+  document.getElementById('editForm').action = '/admin/financial/' + r.id + '/edit';
+  document.getElementById('e_bolum').value = r.bolum || '';
+  document.getElementById('e_sira').value = r.sira || '';
+  document.getElementById('e_gemi_adi').value = r.gemi_adi || '';
+  document.getElementById('e_firma_adi').value = r.firma_adi || '';
+  document.getElementById('e_dwt').value = r.dwt || '';
+  document.getElementById('e_gemi_tipi').value = r.gemi_tipi || '';
+  document.getElementById('e_giris').value = r.giris_tarihi || '';
+  document.getElementById('e_cikis').value = r.cikis_tarihi || '';
+  document.getElementById('e_gun').value = r.gun_sayisi || '';
+  document.getElementById('e_kizak').value = r.kizak_no || '';
+  document.getElementById('e_is').value = r.yapilan_is || '';
+  document.getElementById('e_hesap').value = r.kesilen_hesap || 0;
+  document.getElementById('e_kdv').value = r.kdv || 0;
+  document.getElementById('e_maliyet').value = r.maliyet || 0;
+  document.getElementById('e_fatura').value = r.fatura_durumu || '';
+  document.getElementById('editModal').style.display='flex';
+}
+window.onclick = function(e){ if(e.target.classList.contains('modal')) e.target.style.display='none'; }
+</script>
+{% endblock %}

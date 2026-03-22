@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.pg-btn:hover{background:#106ebe;}
+.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:20px;}
+.item-card{background:#fff;border:1px solid #edebe9;border-radius:6px;padding:16px;}
+.item-title{font-size:13px;font-weight:600;color:#323130;margin-bottom:10px;}
+.item-meta{font-size:12px;color:#605e5c;line-height:1.8;margin-bottom:12px;}
+.item-meta span{color:#323130;font-weight:500;}
+.item-actions{display:flex;gap:8px;}
+.btn-view{padding:4px 12px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:12px;text-decoration:none;}
+.btn-delete{padding:4px 12px;background:#fde7e9;color:#a4262c;border:1px solid #f4abba;border-radius:4px;font-size:12px;text-decoration:none;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
+.badge-yes{background:#dff6dd;color:#107c10;}
+.badge-no{background:#f3f2f1;color:#605e5c;}
+.reg-form{display:none;background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:20px;max-width:520px;margin-bottom:20px;}
+.reg-form.open{display:block;}
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:12px;color:#605e5c;margin-bottom:4px;font-weight:500;}
+.form-group input,.form-group select,.form-group textarea{width:100%;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#fff;outline:none;box-sizing:border-box;}
+.form-group input,.form-group select{height:32px;}
+.form-group textarea{padding:8px;resize:vertical;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#0078d4;}
+.form-title{font-size:14px;font-weight:600;color:#323130;margin-bottom:16px;}
+.form-actions{display:flex;gap:8px;margin-top:16px;}
+.btn-cancel{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;}
+</style>
+<div class="pg-header">
+  <div class="pg-title">Training Assignments</div>
+  <button class="pg-btn" onclick="document.getElementById('regForm').classList.toggle('open')">+ Assign Training</button>
+</div>
+
+<div class="reg-form" id="regForm">
+  <div class="form-title">Assign Training</div>
+  <form method="POST" action="/admin/training/assign">
+    <div class="form-group"><label>Training *</label>
+      <select name="training_id" required>
+        <option value="">Select Training</option>
+        {% for t in trainings %}<option value="{{ t['id'] }}">{{ t['title'] }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group"><label>Employee *</label>
+      <select name="employee_id" required>
+        <option value="">Select Employee</option>
+        {% for e in employees %}<option value="{{ e['id'] }}">{{ e['name'] or 'Employee #' ~ e['id'] }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group"><label>Due Date</label><input type="date" name="due_date"></div>
+    <div class="form-actions">
+      <button type="submit" class="pg-btn">Assign</button>
+      <button type="button" class="btn-cancel" onclick="document.getElementById('regForm').classList.remove('open')">Cancel</button>
+    </div>
+  </form>
+</div>
+
+{% if assignments %}
+<div class="item-grid">
+  {% for a in assignments %}
+  <div class="item-card">
+    <div class="item-title">{{ a["training_title"] }}</div>
+    <div class="item-meta">
+      Employee: <span>#{{ a["employee_id"] }}</span><br>
+      Assigned By: <span>{{ a["assigned_by"] or "-" }}</span><br>
+      Role: <span>{{ a["assigned_role"] or "-" }}</span><br>
+      Date: <span>{{ a["assigned_at"] or "-" }}</span><br>
+      Status: <span>{{ a["status"] or "-" }}</span>
+    </div>
+    <div class="item-actions">
+      <a class="btn-delete" href="/admin/training-assignment/{{ a['id'] }}/delete" onclick="return confirm('Delete?')">Delete</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div style="color:#a19f9d;font-size:13px;padding:20px 0;">No assignments yet.</div>
+{% endif %}
+{% endblock %}

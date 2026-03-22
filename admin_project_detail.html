@@ -1,0 +1,553 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-subtitle{font-size:13px;color:#605e5c;margin-left:8px;font-weight:400;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.badge-open{background:#dff6dd;color:#107c10;}
+.badge-progress{background:#fff4ce;color:#835b00;}
+.badge-waiting{background:#f3f2f1;color:#605e5c;}
+.badge-closed{background:#fde7e9;color:#a4262c;}
+.badge-locked{background:#0b1f4d;color:#fff;}
+/* Tabs */
+.proj-tabs{display:flex;gap:0;border-bottom:1px solid #edebe9;margin-bottom:20px;}
+.proj-tab{padding:10px 20px;font-size:13px;color:#605e5c;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.proj-tab:hover{color:#323130;}
+.proj-tab.active{color:#0078d4;border-bottom-color:#0078d4;font-weight:500;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+/* Cards */
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;display:flex;justify-content:space-between;align-items:center;}
+.ep-card-body{padding:20px;}
+.info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;}
+.info-field{padding:12px 20px;border-bottom:1px solid #edebe9;border-right:1px solid #edebe9;}
+.info-field:nth-child(3n){border-right:none;}
+.info-field:nth-last-child(-n+3){border-bottom:none;}
+.info-label{font-size:11px;color:#a19f9d;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;}
+.info-value{font-size:13px;color:#323130;font-weight:500;}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.form-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:12px;color:#605e5c;font-weight:500;}
+.form-group input,.form-group select,.form-group textarea{border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#fff;outline:none;width:100%;box-sizing:border-box;}
+.form-group input,.form-group select{height:32px;}
+.form-group textarea{padding:8px;resize:vertical;height:80px;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#0078d4;}
+.btn-primary{height:32px;padding:0 16px;background:#0078d4;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;}
+.btn-primary:hover{background:#106ebe;}
+.btn-danger{height:32px;padding:0 16px;background:#a4262c;color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-outline{height:32px;padding:0 14px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* Notes */
+.note-item{padding:14px 0;border-bottom:1px solid #edebe9;}
+.note-item:last-child{border-bottom:none;}
+.note-type{font-size:12px;font-weight:600;color:#0078d4;}
+.note-text{font-size:13px;color:#323130;margin:6px 0;white-space:pre-wrap;}
+.note-date{font-size:11px;color:#a19f9d;}
+/* Docs */
+.doc-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #edebe9;flex-wrap:wrap;gap:8px;}
+.doc-item:last-child{border-bottom:none;}
+.btn-view{padding:3px 10px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:12px;text-decoration:none;}
+.btn-dl{padding:3px 10px;background:#dff6dd;color:#107c10;border:1px solid #9fd89f;border-radius:4px;font-size:12px;text-decoration:none;}
+.btn-del{padding:3px 10px;background:#fde7e9;color:#a4262c;border:1px solid #f4abba;border-radius:4px;font-size:12px;text-decoration:none;}
+/* Job lines table */
+.job-table{width:100%;border-collapse:collapse;font-size:12px;}
+.job-table th{background:#faf9f8;padding:8px 10px;text-align:left;border-bottom:1px solid #edebe9;color:#605e5c;font-weight:600;white-space:nowrap;}
+.job-table td{padding:7px 10px;border-bottom:1px solid #edebe9;vertical-align:middle;}
+.job-table tbody tr:hover td{background:#f3f2f1;}
+.job-table input[type=number]{width:80px;height:26px;border:1px solid #edebe9;border-radius:4px;padding:0 6px;font-size:12px;text-align:right;}
+.job-table input:focus{border-color:#0078d4;outline:none;}
+.extra-badge{background:#fff4ce;color:#835b00;padding:1px 6px;border-radius:8px;font-size:10px;}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
+.kpi{background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:14px;}
+.kpi-label{font-size:11px;color:#605e5c;margin-bottom:4px;}
+.kpi-val{font-size:18px;font-weight:600;color:#323130;}
+.kpi-val.green{color:#107c10;}
+.kpi-val.red{color:#a4262c;}
+.kpi-val.blue{color:#0078d4;}
+/* Invoice */
+.inv-table{width:100%;border-collapse:collapse;font-size:13px;}
+.inv-table th{background:#faf9f8;padding:9px 12px;text-align:left;border-bottom:1px solid #edebe9;color:#605e5c;font-weight:600;}
+.inv-table td{padding:8px 12px;border-bottom:1px solid #edebe9;color:#323130;}
+.inv-table tbody tr:hover td{background:#f3f2f1;}
+/* Labour / PO */
+.mini-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+.mini-table th{background:#faf9f8;padding:6px 8px;text-align:left;border-bottom:1px solid #edebe9;color:#605e5c;font-weight:600;}
+.mini-table td{padding:6px 8px;border-bottom:1px solid #edebe9;}
+@media(max-width:900px){.two-col,.form-grid,.form-grid3{grid-template-columns:1fr;}.info-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+
+<div class="pg-header">
+  <div>
+    <span class="pg-title">{{ project[1] }}</span>
+    <span class="pg-subtitle">{{ project[2] or '' }}</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    {% if project[6] == 'Open' %}<span class="badge badge-open">Open</span>
+    {% elif project[6] == 'In Progress' %}<span class="badge badge-progress">In Progress</span>
+    {% elif project[6] == 'Waiting Customer' %}<span class="badge badge-waiting">Waiting</span>
+    {% elif project[6] == 'Closed' %}<span class="badge badge-closed">Closed</span>{% endif %}
+    {% if is_locked %}<span class="badge badge-locked">Locked</span>{% endif %}
+    {% if not is_locked %}
+    <a href="/admin/project/{{ project[0] }}/close-confirm" class="btn-danger" style="font-size:12px;">Close Project</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="proj-tabs">
+  <div class="proj-tab active" onclick="switchTab('details')">Project Details</div>
+  <div class="proj-tab" onclick="switchTab('costs')">Job & Cost Calculation</div>
+  <div class="proj-tab" onclick="switchTab('invoices')">Invoices</div>
+</div>
+
+<!-- TAB 1: Project Details -->
+<div class="tab-pane active" id="tab-details">
+
+  <div class="ep-card">
+    <div class="ep-card-header">Project Information</div>
+    <div class="info-grid">
+      <div class="info-field"><div class="info-label">Ship</div><div class="info-value">{{ project[8] or '-' }}</div></div>
+      <div class="info-field"><div class="info-label">Tonnage</div><div class="info-value">{{ project[9] or '-' }}</div></div>
+      <div class="info-field"><div class="info-label">Flag</div><div class="info-value">{{ project[10] or '-' }}</div></div>
+      <div class="info-field"><div class="info-label">Berth</div><div class="info-value">{{ project[11] or '-' }}</div></div>
+      <div class="info-field"><div class="info-label">Company</div><div class="info-value">{{ project[12] or '-' }}</div></div>
+      <div class="info-field"><div class="info-label">Customer</div><div class="info-value">{{ (project[13] or '') ~ ' ' ~ (project[14] or '') }}</div></div>
+      <div class="info-field"><div class="info-label">Project Leader</div><div class="info-value">{{ project[15] or '-' }}</div></div>
+      <div class="info-field"><div class="info-label">Entry Date</div><div class="info-value">{{ entry_date or '-' }}</div></div>
+      <div class="info-field"><div class="info-label">Exit Date</div><div class="info-value">{{ exit_date or '-' }}</div></div>
+    </div>
+  </div>
+
+  {% if not is_locked %}
+  <div class="ep-card">
+    <div class="ep-card-header">Update Project</div>
+    <div class="ep-card-body">
+      <form method="post" action="/admin/project/update/{{ project[0] }}">
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-group"><label>Project Code</label><input type="text" name="project_code" value="{{ project[1] }}" required></div>
+          <div class="form-group"><label>Project Title</label><input type="text" name="project_title" value="{{ project[2] or '' }}"></div>
+          <div class="form-group"><label>Ship</label>
+            <select name="ship_id">{% for ship in ships %}<option value="{{ ship[0] }}" {% if project[3] == ship[0] %}selected{% endif %}>{{ ship[1] }}</option>{% endfor %}</select>
+          </div>
+          <div class="form-group"><label>Customer</label>
+            <select name="customer_id">{% for customer in customers %}<option value="{{ customer[0] }}" {% if project[4] == customer[0] %}selected{% endif %}>{{ customer[1] }} {{ customer[2] }}</option>{% endfor %}</select>
+          </div>
+          <div class="form-group"><label>Project Leader</label>
+            <select name="project_leader_id">{% for leader in project_leaders %}<option value="{{ leader[0] }}" {% if project[5] == leader[0] %}selected{% endif %}>{{ leader[1] }}</option>{% endfor %}</select>
+          </div>
+          <div class="form-group"><label>Status</label>
+            <select name="status">
+              <option value="Open" {% if project[6]=="Open" %}selected{% endif %}>Open</option>
+              <option value="In Progress" {% if project[6]=="In Progress" %}selected{% endif %}>In Progress</option>
+              <option value="Waiting Customer" {% if project[6]=="Waiting Customer" %}selected{% endif %}>Waiting Customer</option>
+              <option value="Closed" {% if project[6]=="Closed" %}selected{% endif %}>Closed</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Entry Date</label><input type="date" name="entry_date" value="{{ entry_date or '' }}"></div>
+          <div class="form-group"><label>Exit Date</label><input type="date" name="exit_date" value="{{ exit_date or '' }}"></div>
+          <div class="form-group"><label>Berth</label><input type="text" name="berth" value="{{ berth or '' }}"></div>
+        </div>
+        <button type="submit" class="btn-primary">Update Project</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="two-col">
+    <div class="ep-card">
+      <div class="ep-card-header">Add Note</div>
+      <div class="ep-card-body">
+        <form method="post" action="/admin/project/{{ project[0] }}/note/add">
+          <div class="form-group" style="margin-bottom:10px;"><label>Type</label>
+            <select name="note_type">
+              <option value="Admin Note">Admin Note</option>
+              <option value="Daily Update">Daily Update</option>
+              <option value="Request">Request</option>
+              <option value="Remark">Remark</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:10px;"><label>Note</label>
+            <textarea name="note_text" rows="4"></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Publish Note</button>
+        </form>
+      </div>
+    </div>
+    <div class="ep-card">
+      <div class="ep-card-header">Upload Document</div>
+      <div class="ep-card-body">
+        <form method="post" action="/admin/project/{{ project[0] }}/document/upload" enctype="multipart/form-data">
+          <div class="form-group" style="margin-bottom:10px;"><label>Document Type</label>
+            <select name="document_type">
+              <option value="Drawing">Drawing</option>
+              <option value="Certificate">Certificate</option>
+              <option value="Report">Report</option>
+              <option value="Invoice">Invoice</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:10px;"><label>Title</label><input type="text" name="title"></div>
+          <div class="form-group" style="margin-bottom:10px;"><label>File</label><input type="file" name="file" style="height:auto;padding:4px 8px;"></div>
+          <button type="submit" class="btn-primary">Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {% if notes %}
+  <div class="ep-card">
+    <div class="ep-card-header">Notes</div>
+    <div class="ep-card-body">
+      {% for note in notes %}
+      <div class="note-item">
+        <div class="note-type">{{ note[3] }}</div>
+        <div class="note-text">{{ note[4] }}</div>
+        <div class="note-date">{{ note[5] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if documents %}
+  <div class="ep-card">
+    <div class="ep-card-header">Documents</div>
+    <div class="ep-card-body">
+      {% for doc in documents %}
+      <div class="doc-item">
+        <div>
+          <div class="doc-info" style="font-weight:500;">{{ doc[4] or doc[3] }}</div>
+          <div style="font-size:11px;color:#a19f9d;">{{ doc[2] }} — {{ doc[6] }}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <a href="/uploads/project_documents/{{ doc[3] }}" class="btn-view" target="_blank">View</a>
+          <a href="/uploads/project_documents/{{ doc[3] }}" class="btn-dl" download>Download</a>
+          <a href="/admin/project/document/delete/{{ doc[0] }}/{{ project[0] }}" class="btn-del" onclick="return confirm('Delete?')">Del</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if customer_documents %}
+  <div class="ep-card">
+    <div class="ep-card-header">Customer Uploads</div>
+    <div class="ep-card-body">
+      {% for doc in customer_documents %}
+      <div class="doc-item">
+        <div>
+          <div class="doc-info" style="font-weight:500;">{{ doc[4] or doc[3] }}</div>
+          <div style="font-size:11px;color:#a19f9d;">{{ doc[2] }} — {{ doc[6] }}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <a href="/uploads/project_documents/{{ doc[3] }}" class="btn-view" target="_blank">View</a>
+          <a href="/uploads/project_documents/{{ doc[3] }}" class="btn-dl" download>Download</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if project_permits %}
+  <div class="ep-card">
+    <div class="ep-card-header">Permits</div>
+    <div class="ep-card-body">
+      {% for p in project_permits %}
+      <div class="doc-item">
+        <div>
+          <div class="doc-info" style="font-weight:500;">{{ p[1]|replace("_"," ")|title }} — {{ p[2] or "-" }}</div>
+          <div style="font-size:11px;color:#a19f9d;">By: {{ p[5] or "-" }} · {{ p[4] or "-" }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          {% if p[3] == "approved" %}<span class="badge badge-open">Approved</span>
+          {% elif p[3] == "rejected" %}<span class="badge badge-closed">Rejected</span>
+          {% else %}<span class="badge badge-waiting">Pending</span>{% endif %}
+          <a href="/permits/{{ p[0] }}" class="btn-view">View</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- TAB 2: Job & Cost Calculation -->
+<div class="tab-pane" id="tab-costs">
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">Quoted Revenue</div><div class="kpi-val blue">€ {{ "{:,.0f}".format(kpi.quoted_revenue) }}</div></div>
+    <div class="kpi"><div class="kpi-label">Actual Revenue</div><div class="kpi-val blue">€ {{ "{:,.0f}".format(kpi.actual_revenue) }}</div></div>
+    <div class="kpi"><div class="kpi-label">PO / Purchases</div><div class="kpi-val red">€ {{ "{:,.0f}".format(kpi.purchase_cost) }}</div></div>
+    <div class="kpi"><div class="kpi-label">Labour Cost</div><div class="kpi-val red">€ {{ "{:,.0f}".format(kpi.labour_cost) }}</div></div>
+    <div class="kpi"><div class="kpi-label">Total Cost</div><div class="kpi-val red">€ {{ "{:,.0f}".format(kpi.total_cost) }}</div></div>
+    <div class="kpi"><div class="kpi-label">Gross Profit</div>
+      <div class="kpi-val {{ 'green' if kpi.gross_profit >= 0 else 'red' }}">€ {{ "{:,.0f}".format(kpi.gross_profit) }}</div></div>
+  </div>
+
+  <!-- Job Lines -->
+  <div class="ep-card">
+    <div class="ep-card-header">
+      <span>Job Lines</span>
+      {% if not is_locked %}<button class="btn-primary" style="height:28px;font-size:12px;" onclick="document.getElementById('addJobForm').classList.toggle('open')">+ Add Line</button>{% endif %}
+    </div>
+    <div id="addJobForm" style="display:none;padding:16px;background:#faf9f8;border-bottom:1px solid #edebe9;">
+      <form method="post" action="/admin/project/{{ project[0] }}/job-line/add">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group" style="flex:0 0 80px;"><label>Code</label><input type="text" name="item_code" style="height:28px;"></div>
+          <div class="form-group" style="flex:1;min-width:150px;"><label>Description</label><input type="text" name="description" required style="height:28px;"></div>
+          <div class="form-group" style="flex:0 0 70px;"><label>Qty</label><input type="number" step="0.01" name="actual_qty" value="1" style="height:28px;"></div>
+          <div class="form-group" style="flex:0 0 60px;"><label>Unit</label><input type="text" name="unit" style="height:28px;"></div>
+          <div class="form-group" style="flex:0 0 90px;"><label>Unit Price</label><input type="number" step="0.01" name="unit_price" value="0" style="height:28px;"></div>
+          <button type="submit" class="btn-primary" style="height:28px;font-size:12px;margin-bottom:0;">Add</button>
+        </div>
+      </form>
+    </div>
+    <div style="overflow-x:auto;">
+    <table class="job-table">
+      <thead>
+        <tr>
+          <th>Code</th><th>Description</th><th>Quoted Qty</th><th>Actual Qty</th>
+          <th>Unit</th><th>Unit Price</th><th>Quoted Amt</th><th>Actual Amt</th><th>Inv</th>
+          {% if not is_locked %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for ln in job_lines %}
+        <tr>
+          <td>{{ ln.item_code or '' }}</td>
+          <td>{{ ln.description or '' }} {% if ln.is_extra %}<span class="extra-badge">extra</span>{% endif %}</td>
+          <td style="text-align:right;">{{ "{:,.2f}".format(ln.quoted_qty or 0) }}</td>
+          <td>
+            {% if not is_locked %}
+            <form method="post" action="/admin/project/{{ project[0] }}/job-line/{{ ln.id }}/update" style="display:inline;">
+              <input type="number" step="0.01" name="actual_qty" value="{{ ln.actual_qty or 0 }}" onchange="this.form.submit()">
+            </form>
+            {% else %}
+            {{ "{:,.2f}".format(ln.actual_qty or 0) }}
+            {% endif %}
+          </td>
+          <td>{{ ln.unit or '' }}</td>
+          <td style="text-align:right;">{{ "{:,.2f}".format(ln.unit_price or 0) }}</td>
+          <td style="text-align:right;">{{ "{:,.2f}".format(ln.quoted_amount or 0) }}</td>
+          <td style="text-align:right;font-weight:600;">{{ "{:,.2f}".format(ln.actual_amount or 0) }}</td>
+          <td style="text-align:center;">{% if ln.invoiced %}<span style="color:#107c10;">✓</span>{% endif %}</td>
+          {% if not is_locked %}
+          <td><a href="/admin/project/{{ project[0] }}/job-line/{{ ln.id }}/delete" onclick="return confirm('Delete?')" style="color:#a4262c;font-size:11px;">✕</a></td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="10" style="text-align:center;color:#a19f9d;padding:20px;">No job lines yet.</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="background:#faf9f8;font-weight:600;">
+          <td colspan="6" style="text-align:right;padding:8px 10px;color:#605e5c;">Total</td>
+          <td style="padding:8px 10px;text-align:right;">€ {{ "{:,.2f}".format(kpi.quoted_revenue) }}</td>
+          <td style="padding:8px 10px;text-align:right;color:#0078d4;">€ {{ "{:,.2f}".format(kpi.actual_revenue) }}</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+    </div>
+  </div>
+
+  <!-- Purchases -->
+  <div class="two-col">
+    <div class="ep-card">
+      <div class="ep-card-header">
+        <span>Purchases / PO</span>
+        {% if not is_locked %}<button class="btn-primary" style="height:28px;font-size:12px;" onclick="document.getElementById('addPOForm').classList.toggle('open')">+ Add</button>{% endif %}
+      </div>
+      <div id="addPOForm" style="display:none;padding:14px;background:#faf9f8;border-bottom:1px solid #edebe9;">
+        <form method="post" action="/admin/project/{{ project[0] }}/purchase/add">
+          <div class="form-group" style="margin-bottom:8px;"><label>Supplier</label><input type="text" name="supplier"></div>
+          <div class="form-group" style="margin-bottom:8px;"><label>Description</label><input type="text" name="description" required></div>
+          <div style="display:flex;gap:8px;">
+            <div class="form-group" style="flex:1;"><label>Amount (€)</label><input type="number" step="0.01" name="amount" value="0"></div>
+            <div class="form-group" style="flex:1;"><label>Date</label><input type="date" name="purchase_date"></div>
+          </div>
+          <div class="form-group" style="margin-top:8px;"><label>PO Number</label><input type="text" name="po_number"></div>
+          <button type="submit" class="btn-primary" style="margin-top:10px;height:28px;font-size:12px;">Add Purchase</button>
+        </form>
+      </div>
+      <div class="ep-card-body" style="padding:0;">
+        <table class="mini-table">
+          <thead><tr><th>Supplier</th><th>Description</th><th>Date</th><th style="text-align:right">Amount</th>{% if not is_locked %}<th></th>{% endif %}</tr></thead>
+          <tbody>
+          {% for po in purchases %}
+          <tr>
+            <td>{{ po.supplier or '-' }}</td>
+            <td>{{ po.description or '' }}</td>
+            <td>{{ po.purchase_date or '-' }}</td>
+            <td style="text-align:right;">€ {{ "{:,.2f}".format(po.amount or 0) }}</td>
+            {% if not is_locked %}<td><a href="/admin/project/{{ project[0] }}/purchase/{{ po.id }}/delete" onclick="return confirm('Delete?')" style="color:#a4262c;font-size:11px;">✕</a></td>{% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="5" style="text-align:center;color:#a19f9d;padding:16px;">No purchases.</td></tr>
+          {% endfor %}
+          </tbody>
+          {% if purchases %}
+          <tfoot><tr style="background:#faf9f8;font-weight:600;">
+            <td colspan="3" style="padding:6px 8px;text-align:right;color:#605e5c;">Total</td>
+            <td style="padding:6px 8px;text-align:right;color:#a4262c;">€ {{ "{:,.2f}".format(kpi.purchase_cost) }}</td>
+            {% if not is_locked %}<td></td>{% endif %}
+          </tr></tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+
+    <!-- Labour -->
+    <div class="ep-card">
+      <div class="ep-card-header">
+        <span>Labour Hours</span>
+        {% if not is_locked %}<button class="btn-primary" style="height:28px;font-size:12px;" onclick="document.getElementById('addLabourForm').classList.toggle('open')">+ Add</button>{% endif %}
+      </div>
+      <div id="addLabourForm" style="display:none;padding:14px;background:#faf9f8;border-bottom:1px solid #edebe9;">
+        <form method="post" action="/admin/project/{{ project[0] }}/labour/add">
+          <div class="form-group" style="margin-bottom:8px;"><label>Employee Name</label><input type="text" name="employee_name" required></div>
+          <div style="display:flex;gap:8px;">
+            <div class="form-group" style="flex:1;"><label>Date</label><input type="date" name="work_date"></div>
+            <div class="form-group" style="flex:1;"><label>Hours</label><input type="number" step="0.5" name="hours" value="8"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <div class="form-group" style="flex:1;"><label>Hourly Rate (€)</label><input type="number" step="0.01" name="hourly_rate" value="70"></div>
+            <div class="form-group" style="flex:1;"><label>Description</label><input type="text" name="description"></div>
+          </div>
+          <button type="submit" class="btn-primary" style="margin-top:10px;height:28px;font-size:12px;">Add Hours</button>
+        </form>
+      </div>
+      <div class="ep-card-body" style="padding:0;">
+        <table class="mini-table">
+          <thead><tr><th>Employee</th><th>Date</th><th>Hrs</th><th style="text-align:right">Cost</th>{% if not is_locked %}<th></th>{% endif %}</tr></thead>
+          <tbody>
+          {% for lb in labour %}
+          <tr>
+            <td>{{ lb.employee_name or '-' }}</td>
+            <td>{{ lb.work_date or '-' }}</td>
+            <td style="text-align:center;">{{ lb.hours }}</td>
+            <td style="text-align:right;">€ {{ "{:,.2f}".format(lb.cost or 0) }}</td>
+            {% if not is_locked %}<td><a href="/admin/project/{{ project[0] }}/labour/{{ lb.id }}/delete" onclick="return confirm('Delete?')" style="color:#a4262c;font-size:11px;">✕</a></td>{% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="5" style="text-align:center;color:#a19f9d;padding:16px;">No labour entries.</td></tr>
+          {% endfor %}
+          </tbody>
+          {% if labour %}
+          <tfoot><tr style="background:#faf9f8;font-weight:600;">
+            <td colspan="3" style="padding:6px 8px;text-align:right;color:#605e5c;">Total</td>
+            <td style="padding:6px 8px;text-align:right;color:#a4262c;">€ {{ "{:,.2f}".format(kpi.labour_cost) }}</td>
+            {% if not is_locked %}<td></td>{% endif %}
+          </tr></tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB 3: Invoices -->
+<div class="tab-pane" id="tab-invoices">
+
+  {% if not is_locked %}
+  <div class="ep-card">
+    <div class="ep-card-header">Create Invoice</div>
+    <div class="ep-card-body">
+      <form method="post" action="/admin/project/{{ project[0] }}/invoice/create">
+        <p style="font-size:13px;color:#605e5c;margin:0 0 14px;">Select job lines to include in this invoice:</p>
+        <div style="overflow-x:auto;margin-bottom:16px;">
+        <table class="job-table">
+          <thead><tr><th style="width:32px;"><input type="checkbox" id="checkAll" onclick="document.querySelectorAll('.inv-check').forEach(c=>c.checked=this.checked)"></th><th>Code</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr></thead>
+          <tbody>
+          {% for ln in job_lines %}
+          {% if not ln.invoiced %}
+          <tr>
+            <td><input type="checkbox" class="inv-check" name="line_ids" value="{{ ln.id }}"></td>
+            <td>{{ ln.item_code or '' }}</td>
+            <td>{{ ln.description or '' }}</td>
+            <td style="text-align:right;">{{ ln.actual_qty or 0 }}</td>
+            <td style="text-align:right;">{{ "{:,.2f}".format(ln.unit_price or 0) }}</td>
+            <td style="text-align:right;font-weight:600;">€ {{ "{:,.2f}".format(ln.actual_amount or 0) }}</td>
+          </tr>
+          {% endif %}
+          {% else %}
+          <tr><td colspan="6" style="text-align:center;color:#a19f9d;padding:16px;">All lines already invoiced.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-group" style="flex:0 0 160px;"><label>Invoice Date</label><input type="date" name="invoice_date" value="{{ today }}"></div>
+          <div class="form-group" style="flex:0 0 160px;"><label>Due Date</label><input type="date" name="due_date"></div>
+          <div class="form-group" style="flex:1;min-width:200px;"><label>Notes</label><input type="text" name="notes"></div>
+          <button type="submit" class="btn-primary" style="height:32px;">Create Invoice & PDF</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if invoices %}
+  <div class="ep-card">
+    <div class="ep-card-header">Invoice History</div>
+    <div style="overflow-x:auto;">
+    <table class="inv-table">
+      <thead><tr><th>Invoice No</th><th>Date</th><th>Due</th><th>Total</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for inv in invoices %}
+      <tr>
+        <td style="font-weight:600;">{{ inv.invoice_number }}</td>
+        <td>{{ inv.invoice_date or '-' }}</td>
+        <td>{{ inv.due_date or '-' }}</td>
+        <td>€ {{ "{:,.2f}".format(inv.total_amount or 0) }}</td>
+        <td><span class="badge {% if inv.status=='paid' %}badge-open{% elif inv.status=='sent' %}badge-progress{% else %}badge-waiting{% endif %}">{{ inv.status }}</span></td>
+        <td><a href="/admin/project/{{ project[0] }}/invoice/{{ inv.id }}/pdf" class="btn-view" target="_blank">PDF</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.proj-tab').forEach(function(t,i){
+    t.classList.remove('active');
+  });
+  document.querySelectorAll('.tab-pane').forEach(function(p){
+    p.classList.remove('active');
+  });
+  var tabs = ['details','costs','invoices'];
+  var idx = tabs.indexOf(name);
+  document.querySelectorAll('.proj-tab')[idx].classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  localStorage.setItem('proj_tab_{{ project[0] }}', name);
+}
+// Restore last tab
+var saved = localStorage.getItem('proj_tab_{{ project[0] }}');
+if(saved) switchTab(saved);
+
+// Add form toggle
+document.querySelectorAll('[id$="Form"]').forEach(function(f){
+  if(f.style.display==='none') f.classList.remove('open');
+});
+document.querySelectorAll('[onclick*="classList.toggle"]').forEach(function(btn){
+  btn.onclick = function(){
+    var id = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+    var el = document.getElementById(id);
+    if(el) el.style.display = el.style.display==='none'?'block':'none';
+  };
+});
+</script>
+{% endblock %}

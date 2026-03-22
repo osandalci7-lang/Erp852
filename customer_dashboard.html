@@ -1,0 +1,104 @@
+{% extends "visitor_portal_base.html" %}
+{% block content %}
+<style>
+.pg-title{font-size:18px;font-weight:600;color:#323130;margin-bottom:4px;}
+.pg-sub{font-size:13px;color:#605e5c;margin-bottom:20px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:14px;}
+.kpi-label{font-size:11px;color:#605e5c;margin-bottom:4px;}
+.kpi-val{font-size:18px;font-weight:600;color:#323130;}
+.kpi-val.blue{color:#0078d4;}
+.kpi-val.green{color:#107c10;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.erp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.erp-table th{background:#faf9f8;color:#605e5c;padding:9px 14px;text-align:left;border-bottom:1px solid #edebe9;font-weight:600;}
+.erp-table td{padding:9px 14px;border-bottom:1px solid #edebe9;color:#323130;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.b-open{background:#dff6dd;color:#107c10;}
+.b-progress{background:#fff4ce;color:#835b00;}
+.b-closed{background:#fde7e9;color:#a4262c;}
+.b-draft{background:#f3f2f1;color:#605e5c;}
+.b-paid{background:#dff6dd;color:#107c10;}
+.b-sent{background:#eff6fc;color:#0078d4;}
+.no-company{background:#fff4ce;border:1px solid #f0d060;border-radius:6px;padding:16px;font-size:13px;color:#633806;margin-bottom:20px;}
+</style>
+
+<div class="pg-title">Welcome, {{ customer[2] }} {{ customer[3] }}</div>
+<div class="pg-sub">{{ company_name or 'No company linked' }}</div>
+
+{% if not company_id %}
+<div class="no-company">
+  Your account is not linked to a company yet. Please contact Norden Shipyard to link your account.
+</div>
+{% else %}
+
+{% if projects %}
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Active Projects</div><div class="kpi-val blue">{{ projects|length }}</div></div>
+  <div class="kpi"><div class="kpi-label">Total Invoiced</div><div class="kpi-val green">€ {{ "{:,.0f}".format(invoices|sum(attribute='total_amount')) }}</div></div>
+</div>
+{% endif %}
+
+<!-- Active Projects -->
+<div class="ep-card">
+  <div class="ep-card-header">Your Active Projects</div>
+  <div style="overflow-x:auto;">
+  <table class="erp-table">
+    <thead><tr><th>Project</th><th>Ship</th><th>Berth</th><th>Entry</th><th>Exit</th><th>Current Value</th><th>Invoiced</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for p in projects %}
+    <tr>
+      <td style="font-weight:500;"><a href="/customer/myproject/{{ p.id }}" style="color:#0078d4;text-decoration:none;">{{ p.project_title or p.project_code }}</a></td>
+      <td>{{ p.ship_name or '-' }}</td>
+      <td>{{ p.berth or '-' }}</td>
+      <td>{{ p.entry_date or '-' }}</td>
+      <td>{{ p.exit_date or '-' }}</td>
+      <td style="color:#0078d4;font-weight:600;">€ {{ "{:,.2f}".format(p.actual_revenue or 0) }}</td>
+      <td>€ {{ "{:,.2f}".format(p.invoiced_total or 0) }}</td>
+      <td>
+        {% if p.status == 'Open' %}<span class="badge b-open">Open</span>
+        {% elif p.status == 'In Progress' %}<span class="badge b-progress">In Progress</span>
+        {% elif p.status == 'Closed' %}<span class="badge b-closed">Closed</span>
+        {% else %}<span class="badge b-draft">{{ p.status }}</span>{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" style="text-align:center;color:#a19f9d;padding:20px;">No active projects.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Invoices -->
+{% if invoices %}
+<div class="ep-card">
+  <div class="ep-card-header">Invoices</div>
+  <div style="overflow-x:auto;">
+  <table class="erp-table">
+    <thead><tr><th>Invoice No</th><th>Project</th><th>Ship</th><th>Date</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for inv in invoices %}
+    <tr>
+      <td style="font-weight:500;">{{ inv.invoice_number }}</td>
+      <td>{{ inv.project_title or '-' }}</td>
+      <td>{{ inv.ship_name or '-' }}</td>
+      <td>{{ inv.invoice_date or '-' }}</td>
+      <td>{{ inv.due_date or '-' }}</td>
+      <td style="font-weight:600;">€ {{ "{:,.2f}".format(inv.total_amount or 0) }}</td>
+      <td>
+        {% if inv.status == 'paid' %}<span class="badge b-paid">Paid</span>
+        {% elif inv.status == 'sent' %}<span class="badge b-sent">Sent</span>
+        {% else %}<span class="badge b-draft">{{ inv.status }}</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.erp-table-wrap{background:#fff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;}
+.erp-table{width:100%;border-collapse:collapse;}
+.erp-table th{padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#605e5c;background:#faf9f8;border-bottom:1px solid #edebe9;}
+.erp-table td{padding:10px 16px;font-size:13px;color:#323130;border-bottom:1px solid #edebe9;}
+.erp-table tbody tr:last-child td{border-bottom:none;}
+.erp-table tbody tr:hover{background:#f3f2f1;cursor:pointer;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.badge-green{background:#dff6dd;color:#107c10;}
+.badge-amber{background:#fff4ce;color:#835b00;}
+.btn-view{padding:4px 12px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:12px;text-decoration:none;}
+</style>
+<div class="pg-header"><div class="pg-title">Visitors</div></div>
+<div class="erp-table-wrap"><table class="erp-table">
+<thead><tr><th>ID</th><th>Name</th><th>Surname</th><th>Company</th><th>Mobile</th><th>Safety</th><th></th></tr></thead>
+<tbody>
+{% for visitor in visitors %}
+<tr onclick="window.location='/admin/visitor/{{ visitor[0] }}'">
+<td style="color:#605e5c;">{{ visitor[0] }}</td>
+<td style="font-weight:500;">{{ visitor[3] }}</td>
+<td>{{ visitor[4] }}</td><td>{{ visitor[8] }}</td><td>{{ visitor[5] }}</td>
+<td>{% if visitor[10] == 1 %}<span class="badge badge-green">Completed</span>{% else %}<span class="badge badge-amber">Pending</span>{% endif %}</td>
+<td><a class="btn-view" href="/admin/visitor/{{ visitor[0] }}">View</a></td>
+</tr>
+{% endfor %}
+{% if not visitors %}<tr><td colspan="7" style="text-align:center;color:#a19f9d;padding:24px;">No visitors yet.</td></tr>{% endif %}
+</tbody></table></div>
+{% endblock %}

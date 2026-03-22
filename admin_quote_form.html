@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.pg-btn:hover{background:#106ebe;}
+.pg-btn-outline{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-card-body{padding:20px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:12px;color:#605e5c;font-weight:500;}
+.form-group input,.form-group select,.form-group textarea{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#fff;box-sizing:border-box;width:100%;}
+.form-group textarea{height:60px;padding:6px 8px;resize:vertical;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#0078d4;outline:none;}
+.tpl-bar{display:flex;gap:8px;align-items:center;padding:12px 16px;background:#f0f6ff;border:1px solid #c7e0f4;border-radius:6px;margin-bottom:14px;flex-wrap:wrap;}
+.tpl-bar label{font-size:12px;color:#0078d4;font-weight:600;white-space:nowrap;}
+.tpl-bar select{height:32px;border:1px solid #c7e0f4;border-radius:4px;padding:0 8px;font-size:13px;flex:1;min-width:180px;}
+.btn-tpl{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;}
+.line-table{width:100%;border-collapse:collapse;font-size:12px;}
+.line-table th{background:#faf9f8;padding:7px 8px;text-align:left;border-bottom:1px solid #edebe9;color:#605e5c;font-weight:600;white-space:nowrap;}
+.line-table td{padding:4px 4px;border-bottom:1px solid #edebe9;vertical-align:middle;}
+.line-table input[type=text],.line-table input[type=number]{height:28px;border:1px solid #edebe9;border-radius:4px;padding:0 6px;font-size:12px;width:100%;box-sizing:border-box;}
+.line-table input[type=number]{text-align:right;}
+.line-table input:focus{border-color:#0078d4;outline:none;}
+.line-table input[readonly]{background:#faf9f8;font-weight:600;color:#0078d4;}
+.col-code{width:72px;}
+.col-desc{min-width:180px;}
+.col-qty{width:90px;}
+.col-unit{width:60px;}
+.col-price{width:90px;}
+.col-amt{width:95px;}
+.col-edit{width:0px;padding:0;}
+.col-del{width:28px;}
+.btn-del-line{background:#fde7e9;color:#a4262c;border:1px solid #f4abba;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:11px;}
+.btn-edit-desc{background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:11px;}
+.total-row td{background:#faf9f8;font-weight:600;font-size:13px;padding:8px 4px;}
+.add-bar{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap;}
+.add-bar select{height:30px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:12px;flex:1;min-width:200px;}
+.btn-add{height:30px;padding:0 14px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;}
+.btn-manual{height:30px;padding:0 12px;background:#f3f2f1;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap;}
+.form-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;border-top:1px solid #edebe9;margin-top:8px;}
+/* Description Modal */
+.desc-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:flex-start;justify-content:center;padding-top:80px;}
+.desc-modal.open{display:flex;}
+.desc-modal-box{background:#fff;border-radius:6px;padding:24px;width:95%;max-width:560px;border:1px solid #edebe9;}
+.desc-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #edebe9;}
+.desc-modal-title{font-size:14px;font-weight:600;color:#323130;}
+.desc-modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:#605e5c;}
+.desc-modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #edebe9;}
+@media(max-width:768px){.form-grid,.form-grid3{grid-template-columns:1fr;}.line-table{font-size:11px;}}
+</style>
+
+<div class="pg-header">
+  <div>
+    <div class="pg-title">
+      {% if quote %}Edit Quote{% else %}New Quote{% endif %}
+      <span style="font-size:13px;color:#605e5c;font-weight:400;margin-left:8px;">{{ quote_number }}</span>
+      {% if quote and quote.version > 1 %}<span style="font-size:11px;background:#fff4ce;color:#835b00;padding:2px 8px;border-radius:10px;margin-left:6px;">v{{ quote.version }}</span>{% endif %}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="/admin/quotes" class="pg-btn-outline">Back</a>
+    {% if quote %}<a href="/admin/quotes/{{ quote.id }}/pdf" class="pg-btn-outline" target="_blank">PDF</a>
+    <a href="/admin/quotes/{{ quote.id }}/revise" class="pg-btn-outline" onclick="return confirm('Yeni revizyon oluşturulsun mu?')">Revise</a>
+    {% if quote.status != 'revised' and not quote.project_id %}
+    <a href="/admin/quotes/{{ quote.id }}/make-order-form" class="pg-btn" style="background:#107c10;">Make Order</a>
+    {% elif quote.project_id %}
+    <a href="/admin/project/{{ quote.project_id }}" class="pg-btn" style="background:#107c10;">View Project</a>
+    {% endif %}{% endif %}
+  </div>
+</div>
+
+<form method="post" action="{% if quote %}/admin/quotes/{{ quote.id }}/edit{% else %}/admin/quotes/new{% endif %}">
+
+<div class="ep-card">
+  <div class="ep-card-header">General</div>
+  <div class="ep-card-body">
+    <div class="form-grid">
+      <div class="form-group"><label>Company</label>
+        <select name="company_id" id="company_select" onchange="loadCompanyShips(this.value)">
+          <option value="">— Select Company —</option>
+          {% for co in companies %}
+          <option value="{{ co.id }}" {% if quote and quote.company_id == co.id %}selected{% endif %}>{{ co.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group"><label>Linked Project</label>
+        {% if quote and quote.project_id %}
+        <div style="height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;background:#faf9f8;display:flex;align-items:center;justify-content:space-between;">
+          <span style="color:#323130;">{{ quote.project_title or ('Project #' ~ quote.project_id) }}</span>
+          <a href="/admin/project/{{ quote.project_id }}" style="color:#0078d4;font-size:12px;">Open →</a>
+        </div>
+        <input type="hidden" name="project_id" value="{{ quote.project_id }}">
+        {% else %}
+        <div style="height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;background:#faf9f8;display:flex;align-items:center;color:#a19f9d;">
+          No project yet — use Make Order
+        </div>
+        <input type="hidden" name="project_id" value="">
+        {% endif %}
+      </div>
+    </div>
+    <div class="form-grid3">
+      <div class="form-group"><label>Ship Name</label>
+        <select name="ship_name" id="ship_select" onchange="fillShipDims(this)">
+          <option value="">— Select Ship —</option>
+          {% if quote and quote.ship_name %}
+          <option value="{{ quote.ship_name }}" selected>{{ quote.ship_name }}</option>
+          {% endif %}
+        </select>
+        <input type="text" id="ship_manual" placeholder="Or type manually..." style="margin-top:4px;" oninput="document.querySelector('[name=ship_name]').value=this.value">
+      </div>
+      <div class="form-group"><label>Quote Date</label><input type="date" name="quote_date" value="{{ quote.quote_date if quote else today }}"></div>
+      <div class="form-group"><label>Due Date</label><input type="date" name="due_date" value="{{ quote.due_date if quote else '' }}"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Status</label>
+        <select name="status">
+          <option value="draft" {% if not quote or quote.status=='draft' %}selected{% endif %}>Draft</option>
+          <option value="sent" {% if quote and quote.status=='sent' %}selected{% endif %}>Sent</option>
+          <option value="accepted" {% if quote and quote.status=='accepted' %}selected{% endif %}>Accepted</option>
+          <option value="rejected" {% if quote and quote.status=='rejected' %}selected{% endif %}>Rejected</option>
+          <option value="revised" {% if quote and quote.status=='revised' %}selected{% endif %}>Revised</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Your Reference</label><input type="text" name="your_reference" value="{{ quote.your_reference if quote else '' }}"></div>
+    </div>
+  </div>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-header">Quote Lines</div>
+  <div class="ep-card-body">
+
+    <!-- Template seçimi -->
+    {% if templates %}
+    <div class="tpl-bar">
+      <label>Load Template:</label>
+      <select id="tpl-select">
+        <option value="">— Select quote template —</option>
+        {% for tpl in templates %}
+        <option value="{{ tpl.id }}" data-name="{{ tpl.name }}">{{ tpl.name }} ({{ tpl.category }})</option>
+        {% endfor %}
+      </select>
+      <button type="button" class="btn-tpl" onclick="loadTemplate()">Load Template</button>
+      <span style="font-size:11px;color:#605e5c;">⚠ Mevcut satırların üzerine yazar</span>
+    </div>
+    {% endif %}
+
+    <!-- Standart kalem ekle -->
+    <div class="add-bar">
+      <select id="std-select">
+        <option value="">— Select standard item —</option>
+        {% for si in std_items %}
+        <option value="{{ si.item_code }}" data-desc="{{ si.title }}" data-longdesc="{{ si.long_description or '' }}" data-unit="{{ si.unit or '' }}" data-price="{{ si.default_price or 0 }}">
+          {{ si.item_code }} — {{ si.title }}
+        </option>
+        {% endfor %}
+      </select>
+      <button type="button" class="btn-add" onclick="addStdLine()">+ Add Item</button>
+      <button type="button" class="btn-manual" onclick="addManualLine()">+ Manual</button>
+    </div>
+
+    <!-- Lines table -->
+    <div style="overflow-x:auto;margin-top:10px;">
+    <table class="line-table" id="linesTable">
+      <thead>
+        <tr>
+          <th class="col-code">Code</th>
+          <th class="col-desc">Description</th>
+          <th class="col-qty">Qty</th>
+          <th class="col-unit">Unit</th>
+          <th class="col-price">Unit Price</th><th style="width:58px;">Cur.</th>
+          <th class="col-amt">Amount</th>
+          <th class="col-del"></th>
+        </tr>
+      </thead>
+      <tbody id="linesTbody">
+        {% for ln in lines %}
+        <tr>
+          <td class="col-code"><input type="text" name="line_code[]" value="{{ ln.item_code or '' }}"></td>
+          <td class="col-desc" style="display:flex;gap:4px;align-items:center;border-bottom:none;padding:4px 4px;"><input type="text" name="line_desc[]" value="{{ ln.description or '' }}" style="flex:1;"><button type="button" class="btn-edit-desc" onclick="openDescModal(this)" title="Edit long description" style="white-space:nowrap;">✎</button></td>
+          <td class="col-qty"><input type="number" step="0.01" name="line_qty[]" value="{{ ln.quantity or '' }}" onchange="calcRow(this)"></td>
+          <td class="col-unit"><input type="text" name="line_unit[]" value="{{ ln.unit or '' }}"></td>
+          <td class="col-price"><input type="number" step="0.01" name="line_price[]" value="{{ ln.unit_price or '' }}" onchange="calcRow(this)"></td><td><select name="line_currency[]" style="height:28px;border:1px solid #edebe9;border-radius:4px;font-size:12px;width:54px;padding:0 2px;"><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>
+          <td class="col-amt"><input type="number" step="0.01" name="line_amount[]" value="{{ ln.line_amount or '' }}" readonly></td>
+          <input type="hidden" name="line_longdesc[]" value="{{ ln.long_description or '' }}">
+          <input type="hidden" name="line_manual[]" value="{{ ln.is_manual or 0 }}">
+          <td class="col-del"><button type="button" class="btn-del-line" onclick="this.closest('tr').remove();updateTotal()">✕</button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="5" style="text-align:right;padding-right:10px;color:#605e5c;">Total excl. VAT</td>
+          <td id="grandTotal" style="color:#0078d4;">€ 0.00</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+    </div>
+
+    <div class="form-group" style="margin-top:14px;">
+      <label>Notes</label>
+      <textarea name="notes">{{ quote.notes if quote else '' }}</textarea>
+    </div>
+  </div>
+</div>
+
+<div class="form-footer">
+  <a href="/admin/quotes" class="pg-btn-outline">Cancel</a>
+  <button type="submit" class="pg-btn">Save</button>
+</div>
+</form>
+
+<!-- Description Modal -->
+<div class="desc-modal" id="descModal">
+  <div class="desc-modal-box">
+    <div class="desc-modal-header">
+      <span class="desc-modal-title" id="descModalTitle">Edit Description</span>
+      <button class="desc-modal-close" onclick="closeDescModal()">×</button>
+    </div>
+    <div class="form-group">
+      <label>Item Description (printed under item title in PDF)</label>
+      <textarea id="descModalText" style="height:160px;resize:vertical;width:100%;border:1px solid #edebe9;border-radius:4px;padding:8px;font-size:13px;box-sizing:border-box;"></textarea>
+    </div>
+    <div class="desc-modal-footer">
+      <button type="button" class="pg-btn-outline" onclick="closeDescModal()">Cancel</button>
+      <button type="button" class="pg-btn" onclick="saveDesc()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _currentDescRow = null;
+
+// Template yükle
+var tplData = {{ templates_json | safe }};
+
+function loadTemplate(){
+  var sel = document.getElementById('tpl-select');
+  var tplId = parseInt(sel.value);
+  if(!tplId) return;
+  var tpl = tplData.find(function(t){ return t.id === tplId; });
+  if(!tpl) return;
+  if(!confirm('Mevcut satırlar silinecek ve şablon yüklenecek. Devam?')) return;
+  document.getElementById('linesTbody').innerHTML = '';
+  tpl.lines.forEach(function(ln){
+    var amt = (parseFloat(ln.quantity)||0) * (parseFloat(ln.unit_price)||0);
+    addRow(ln.item_code, ln.description, ln.long_description, ln.quantity||'', ln.unit, ln.unit_price||'', amt||'', 0);
+  });
+  updateTotal();
+  sel.selectedIndex = 0;
+}
+
+function addStdLine(){
+  var sel = document.getElementById('std-select');
+  var opt = sel.options[sel.selectedIndex];
+  if(!opt.value) return;
+  var price = parseFloat(opt.dataset.price)||0;
+  addRow(opt.value, opt.dataset.desc, opt.dataset.longdesc, '', opt.dataset.unit, price||'', 0, 0);
+  sel.selectedIndex = 0;
+}
+
+function addManualLine(){
+  addRow('','','','','','',0,1);
+}
+
+function addRow(code, desc, longdesc, qty, unit, price, amount, isManual){
+  var tbody = document.getElementById('linesTbody');
+  var tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td class="col-code"><input type="text" name="line_code[]" value="'+escH(code)+'"></td>'+
+    '<td class="col-desc" style="display:flex;gap:4px;align-items:center;border-bottom:none;padding:4px 4px;"><input type="text" name="line_desc[]" value="'+escH(desc)+'" style="flex:1;"><button type="button" class="btn-edit-desc" onclick="openDescModal(this)" title="Edit long description" style="white-space:nowrap;">✎</button></td>'+
+    '<td class="col-qty"><input type="number" step="0.01" name="line_qty[]" value="'+escH(qty)+'" onchange="calcRow(this)"></td>'+
+    '<td class="col-unit"><input type="text" name="line_unit[]" value="'+escH(unit)+'"></td>'+
+    '<td class="col-price"><input type="number" step="0.01" name="line_price[]" value="'+escH(price)+'" onchange="calcRow(this)"></td>'+'<td><select name="line_currency[]" style="height:28px;border:1px solid #edebe9;border-radius:4px;font-size:12px;width:54px;padding:0 2px;"><option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option></select></td>'+
+    '<td class="col-amt"><input type="number" step="0.01" name="line_amount[]" value="'+escH(amount)+'" readonly></td>'+
+    '<input type="hidden" name="line_longdesc[]" value="'+escH(longdesc)+'">'+
+    '<input type="hidden" name="line_manual[]" value="'+isManual+'">'+
+    '<td class="col-edit"><button type="button" class="btn-edit-desc" onclick="openDescModal(this)" title="Edit description">✎</button></td>'+
+    '<td class="col-del"><button type="button" class="btn-del-line" onclick="this.closest(\'tr\').remove();updateTotal()">✕</button></td>';
+  tbody.appendChild(tr);
+  updateTotal();
+}
+
+function escH(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function calcRow(inp){
+  var tr = inp.closest('tr');
+  var qty = parseFloat(tr.querySelector('[name="line_qty[]"]').value)||0;
+  var price = parseFloat(tr.querySelector('[name="line_price[]"]').value)||0;
+  tr.querySelector('[name="line_amount[]"]').value = (qty*price).toFixed(2);
+  updateTotal();
+}
+
+function updateTotal(){
+  var total = 0;
+  document.querySelectorAll('[name="line_amount[]"]').forEach(function(a){ total += parseFloat(a.value)||0; });
+  document.getElementById('grandTotal').textContent = '€ '+total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// Description modal
+function openDescModal(btn){
+  _currentDescRow = btn.closest('tr');
+  var desc = _currentDescRow.querySelector('[name="line_desc[]"]').value;
+  var longdesc = _currentDescRow.querySelector('[name="line_longdesc[]"]').value;
+  document.getElementById('descModalTitle').textContent = 'Description: ' + (desc||'item');
+  document.getElementById('descModalText').value = longdesc;
+  document.getElementById('descModal').classList.add('open');
+}
+
+function closeDescModal(){
+  document.getElementById('descModal').classList.remove('open');
+  _currentDescRow = null;
+}
+
+function saveDesc(){
+  if(!_currentDescRow) return;
+  _currentDescRow.querySelector('[name="line_longdesc[]"]').value = document.getElementById('descModalText').value;
+  closeDescModal();
+}
+
+window.onclick = function(e){
+  if(e.target.id === 'descModal') closeDescModal();
+};
+
+updateTotal();
+
+// Company değişince gemileri yükle
+function loadCompanyShips(cid) {
+  var sel = document.getElementById('ship_select');
+  sel.innerHTML = '<option value="">— Select Ship —</option>';
+  if(!cid) return;
+  fetch('/admin/api/companies/' + cid + '/ships')
+    .then(function(r){ return r.json(); })
+    .then(function(ships){
+      ships.forEach(function(s){
+        var opt = document.createElement('option');
+        opt.value = s.ship_name;
+        opt.textContent = s.ship_name + (s.ship_type ? ' (' + s.ship_type + ')' : '') + (s.length ? ' ' + s.length + 'x' + s.beam + 'm' : '');
+        opt.dataset.type = s.ship_type || '';
+        opt.dataset.flag = s.flag || '';
+        opt.dataset.tonnage = s.tonnage || '';
+        opt.dataset.length = s.length || '';
+        opt.dataset.beam = s.beam || '';
+        sel.appendChild(opt);
+      });
+    });
+}
+
+function fillShipDims(sel) {
+  var opt = sel.options[sel.selectedIndex];
+  var manual = document.getElementById('ship_manual');
+  if(opt && opt.value) manual.value = opt.value;
+}
+
+// Sayfa açıkken mevcut company'nin gemilerini yükle
+var existingCompany = document.getElementById('company_select').value;
+if(existingCompany) loadCompanyShips(existingCompany);
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.db-title{font-size:20px;font-weight:600;color:#323130;margin-bottom:20px;}
+.db-modules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:24px;}
+.db-mod{background:#ffffff;border:1px solid #edebe9;border-radius:6px;padding:16px 20px;text-decoration:none;color:#323130;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;transition:background 0.1s;}
+.db-mod:hover{background:#f3f2f1;border-color:#c8c6c4;}
+.db-mod svg{width:18px;height:18px;color:#0078d4;flex-shrink:0;}
+.db-gate{background:#ffffff;border:1px solid #edebe9;border-radius:6px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.db-gate-name{font-size:13px;font-weight:600;color:#323130;}
+.db-gate-status{font-size:12px;color:#605e5c;margin-top:2px;}
+.db-gate-btns{margin-left:auto;display:flex;gap:8px;}
+.db-btn-open{background:#107c10;color:white;border:none;padding:6px 16px;border-radius:4px;font-size:13px;cursor:pointer;}
+.db-btn-open:hover{background:#0b6a0b;}
+.db-btn-close{background:#a4262c;color:white;border:none;padding:6px 16px;border-radius:4px;font-size:13px;cursor:pointer;}
+.db-btn-close:hover{background:#8e1c21;}
+.db-panel{background:#ffffff;border:1px solid #edebe9;border-radius:6px;margin-bottom:24px;}
+.db-panel-header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #edebe9;}
+.db-panel-title{font-size:14px;font-weight:600;color:#323130;}
+.db-panel-link{font-size:12px;color:#0078d4;text-decoration:none;}
+.db-panel-link:hover{text-decoration:underline;}
+.db-ships{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;}
+.db-ship{padding:14px 20px;border-bottom:1px solid #edebe9;border-right:1px solid #edebe9;}
+.db-ship:nth-child(3n){border-right:none;}
+.db-ship:nth-last-child(-n+3){border-bottom:none;}
+.db-ship-name{font-size:13px;font-weight:600;color:#323130;margin-bottom:6px;}
+.db-ship-meta{font-size:12px;color:#605e5c;line-height:1.6;}
+.db-empty{padding:20px;font-size:13px;color:#a19f9d;text-align:center;}
+@media(max-width:900px){
+  .db-modules{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .db-ships{grid-template-columns:1fr;}
+  .db-ship{border-right:none;}
+}
+</style>
+
+<div class="db-title">Dashboard</div>
+
+<div class="db-modules">
+  <a href="/admin/employees" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M6 7a3 3 0 100-6 3 3 0 000 6zm-4 6c0-2.2 1.8-4 4-4s4 1.8 4 4H2z"/></svg>
+    Employees
+  </a>
+  <a href="/admin/visitors" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a3 3 0 100 6A3 3 0 008 1zM3 13c0-2.8 2.2-5 5-5s5 2.2 5 5H3z"/></svg>
+    Visitors
+  </a>
+  <a href="/projects" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="2" width="5" height="5" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="2" y="9" width="5" height="5" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="9" width="5" height="5" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+    Projects
+  </a>
+  <a href="/admin/ships" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 10l2-6h8l2 6H2z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M5 4V2h6v2M1 13h14" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+    Ships
+  </a>
+  <a href="/admin/trainings" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v9H2V3z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M5 14h6M8 12v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Trainings
+  </a>
+  <a href="/admin/documents" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h7l3 3v9H3V2z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10 2v3h3M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Documents
+  </a>
+  <a href="/admin/customers" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="4" width="14" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 4V3a2 2 0 014 0v1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+    Customers
+  </a>
+  {% if user and user['role'] == 'admin' %}
+  <a href="/admin/financial" class="db-mod">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 12L4 7l3 3 3-4 5 6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Financial
+  </a>
+  {% endif %}
+</div>
+
+{% if user["role"] == "admin" or user["position"] in ["Operation Manager", "Managing Director"] %}
+<div class="db-gate">
+  <svg width="20" height="20" viewBox="0 0 16 16" fill="#605e5c"><path d="M3 2h4v12H3V2zm6 0h4v12H9V2zM1 14h14" stroke="#605e5c" stroke-width="1.2" fill="none"/></svg>
+  <div>
+    <div class="db-gate-name">Norden Gate</div>
+    <div class="db-gate-status" id="gate-status-text">Checking...</div>
+  </div>
+  <div class="db-gate-btns">
+    <button class="db-btn-open" onclick="gateAction('open')">Open</button>
+    <button class="db-btn-close" onclick="gateAction('close')">Close</button>
+  </div>
+</div>
+<script>
+async function gateAction(action){
+  const btns=document.querySelectorAll('.db-btn-open,.db-btn-close');
+  btns.forEach(b=>b.disabled=true);
+  try{
+    await fetch("/admin/gate/"+action,{credentials:'include'});
+    checkGateStatus();
+  }catch(e){}
+  btns.forEach(b=>b.disabled=false);
+}
+async function checkGateStatus(){
+  try{
+    const r=await fetch("/admin/gate/status",{credentials:'include'});
+    const d=await r.json();
+    const el=document.getElementById("gate-status-text");
+    el.textContent="Status: "+d.status;
+    el.style.color=d.status==="open"?"#107c10":"#a4262c";
+  }catch(e){}
+}
+checkGateStatus();
+</script>
+{% endif %}
+
+<div class="db-panel">
+  <div class="db-panel-header">
+    <span class="db-panel-title">Ships in Yard</span>
+    <a href="/admin/ships" class="db-panel-link">View All →</a>
+  </div>
+  {% if dashboard_ships %}
+  <div class="db-ships">
+    {% for ship in dashboard_ships %}
+    <div class="db-ship">
+      <div class="db-ship-name">{{ ship[0] or '-' }}</div>
+      <div class="db-ship-meta">
+        <span style="color:#323130;">{{ ship[1] or '-' }}</span><br>
+        Berth: {{ ship[2] or '-' }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="db-empty">No ships currently in yard.</div>
+  {% endif %}
+</div>
+{% endblock %}

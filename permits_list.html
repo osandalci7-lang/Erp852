@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-actions{display:flex;gap:8px;}
+.pg-btn{height:32px;padding:0 14px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.pg-btn:hover{background:#106ebe;}
+.erp-table-wrap{background:#fff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;}
+.erp-table{width:100%;border-collapse:collapse;}
+.erp-table th{padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#605e5c;background:#faf9f8;border-bottom:1px solid #edebe9;}
+.erp-table td{padding:10px 16px;font-size:13px;color:#323130;border-bottom:1px solid #edebe9;}
+.erp-table tbody tr:last-child td{border-bottom:none;}
+.erp-table tbody tr:hover{background:#f3f2f1;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.badge-pending{background:#fff4ce;color:#835b00;}
+.badge-approved{background:#dff6dd;color:#107c10;}
+.badge-rejected{background:#fde7e9;color:#a4262c;}
+.type-badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;background:#f3f2f1;color:#323130;}
+.action-link{font-size:12px;text-decoration:none;padding:3px 8px;border-radius:4px;}
+.action-view{color:#0078d4;background:#eff6fc;border:1px solid #c7e0f4;}
+.action-approve{color:#107c10;background:#dff6dd;border:1px solid #9fd89f;}
+.action-reject{color:#a4262c;background:#fde7e9;border:1px solid #f4abba;}
+@media(max-width:900px){.erp-table-wrap{overflow-x:auto;}.erp-table{white-space:nowrap;}}
+</style>
+
+<div class="pg-header">
+  <div class="pg-title">Permits</div>
+  <div class="pg-actions">
+    <a href="/permits/confined-space/new" class="pg-btn">+ Confined Space</a>
+    <a href="/permits/hotwork/new" class="pg-btn">+ Hot Work</a>
+    <a href="/permits/hdr/new" class="pg-btn">+ HDR</a>
+  </div>
+</div>
+
+{% if permits %}
+<div class="erp-table-wrap">
+  <table class="erp-table">
+    <thead>
+      <tr><th>#</th><th>Type</th><th>Vessel</th><th>Location</th><th>Filled By</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for p in permits %}
+      <tr>
+        <td style="color:#605e5c;">{{ p[0] }}</td>
+        <td><span class="type-badge">{{ p[1]|replace('_',' ')|title }}</span></td>
+        <td style="font-weight:500;">{{ p[2] or '-' }}</td>
+        <td>{{ p[3] or '-' }}</td>
+        <td>{{ p[4] or '-' }}</td>
+        <td style="color:#605e5c;">{{ p[5][:16] if p[5] else '-' }}</td>
+        <td>
+          {% if p[6] == 'pending' %}<span class="badge badge-pending">Pending</span>
+          {% elif p[6] == 'approved' %}<span class="badge badge-approved">Approved</span>
+          {% elif p[6] == 'rejected' %}<span class="badge badge-rejected">Rejected</span>{% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <a href="/permits/{{ p[0] }}" class="action-link action-view">View</a>
+            {% if p[6] == 'pending' and (has_permission(user, 'admin_full_access') or user['position'] in ['HSEQ Manager', 'HSEQ Officer', 'Operation Manager']) %}
+            <a href="/permits/{{ p[0] }}/approve" class="action-link action-approve">Approve</a>
+            <a href="/permits/{{ p[0] }}/reject" class="action-link action-reject">Reject</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div style="text-align:center;padding:48px;color:#a19f9d;font-size:13px;">No permits yet.</div>
+{% endif %}
+{% endblock %}

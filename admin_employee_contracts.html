@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.ep-tabs{display:flex;gap:0;border-bottom:1px solid #edebe9;margin-bottom:20px;overflow-x:auto;padding:0;}
+.ep-tab{padding:10px 16px;font-size:13px;color:#605e5c;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;}
+.ep-tab:hover{color:#323130;background:#f3f2f1;}
+.ep-tab.active{color:#0078d4;border-bottom-color:#0078d4;font-weight:500;}
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.pg-btn:hover{background:#106ebe;}
+.ep-section-title{font-size:14px;font-weight:600;color:#323130;margin:20px 0 12px;}
+.contract-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px;}
+.contract-item{background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:16px;}
+.contract-item-title{font-size:13px;font-weight:600;color:#323130;margin-bottom:8px;}
+.contract-item-meta{font-size:12px;color:#605e5c;margin-bottom:12px;line-height:1.6;}
+.contract-item-actions{display:flex;gap:8px;}
+.btn-view{padding:4px 12px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:12px;text-decoration:none;display:inline-block;}
+.btn-download{padding:4px 12px;background:#dff6dd;color:#107c10;border:1px solid #9fd89f;border-radius:4px;font-size:12px;text-decoration:none;display:inline-block;}
+.btn-delete{padding:4px 12px;background:#fde7e9;color:#a4262c;border:1px solid #f4abba;border-radius:4px;font-size:12px;text-decoration:none;cursor:pointer;display:inline-block;}
+.payslip-box{background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:16px;max-width:400px;margin-bottom:20px;}
+.payslip-box select{width:100%;height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#ffffff;margin-bottom:12px;outline:none;}
+.reg-form{display:none;background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:20px;max-width:480px;margin-bottom:20px;}
+.reg-form.open{display:block;}
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:12px;color:#605e5c;margin-bottom:4px;font-weight:500;}
+.form-group input,.form-group select{width:100%;height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#ffffff;outline:none;box-sizing:border-box;}
+.form-group input[type=file]{height:auto;padding:6px 8px;}
+.form-group input:focus,.form-group select:focus{border-color:#0078d4;}
+.form-title{font-size:14px;font-weight:600;color:#323130;margin-bottom:16px;}
+.form-actions{display:flex;gap:8px;margin-top:16px;}
+.btn-cancel{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;}
+@media(max-width:900px){.contract-grid{grid-template-columns:1fr;}}
+</style>
+
+<div class="ep-tabs">
+  <a class="ep-tab" href="/admin/employee/{{ emp_id }}">Personal Details</a>
+  <a class="ep-tab active" href="/admin/employee/{{ emp_id }}/contracts">Contracts</a>
+  {% if has_permission(current_user, "employee_certificates_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ emp_id }}/certificates">Certificates</a>
+  {% endif %}
+  {% if has_permission(current_user, "employee_health_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ emp_id }}/health">Health</a>
+  {% endif %}
+  {% if has_permission(current_user, "employee_assets_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ emp_id }}/assets">Staff Assets</a>
+  {% endif %}
+  {% if has_permission(current_user, "employee_training_view") %}
+  <a class="ep-tab" href="/admin/employee/{{ emp_id }}/trainings">Training</a>
+  {% endif %}
+</div>
+
+<div class="pg-header">
+  <div class="pg-title">Employee Documents</div>
+  <button class="pg-btn" onclick="document.getElementById('regForm').classList.toggle('open')">+ Register Document</button>
+</div>
+
+<div class="reg-form" id="regForm">
+  <div class="form-title">Register Document</div>
+  <form action="/admin/employee/{{ emp_id }}/document/upload" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>Document Type</label>
+      <select name="doc_type" onchange="toggleFields(this.value)">
+        <option value="contract">Contract</option>
+        <option value="payslip">Payslip</option>
+      </select>
+    </div>
+    <div id="contract_fields">
+      <div class="form-group"><label>Start Date</label><input type="date" name="start_date"></div>
+      <div class="form-group"><label>End Date</label><input type="date" name="end_date"></div>
+    </div>
+    <div id="payslip_fields" style="display:none">
+      <div class="form-group">
+        <label>Month</label>
+        <select name="month">
+          <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+          <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+          <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+          <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Year</label><input type="number" name="year" value="2025"></div>
+    </div>
+    <div class="form-group"><label>Upload PDF</label><input type="file" name="file" required></div>
+    <div class="form-actions">
+      <button type="submit" class="pg-btn">Upload</button>
+      <button type="button" class="btn-cancel" onclick="document.getElementById('regForm').classList.remove('open')">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<div class="ep-section-title">Contracts</div>
+{% if contracts %}
+<div class="contract-grid">
+  {% for contract in contracts %}
+  <div class="contract-item">
+    <div class="contract-item-title">Contract</div>
+    <div class="contract-item-meta">Start: {{ contract[1] }}<br>End: {{ contract[2] }}</div>
+    <div class="contract-item-actions">
+      <a class="btn-view" href="/static/contracts/{{ contract[3] }}" target="_blank">View</a>
+      <a class="btn-download" href="/static/contracts/{{ contract[3] }}" download>Download</a>
+      <a class="btn-delete" href="/admin/employee/{{ emp_id }}/contract/{{ contract[0] }}/delete">Delete</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div style="color:#a19f9d;font-size:13px;margin-bottom:20px;">No contracts found.</div>
+{% endif %}
+
+<div class="ep-section-title">Payslips</div>
+<div class="payslip-box">
+  <select id="payslip_select">
+    <option value="">Select Payslip</option>
+    {% for p in payslips %}
+    <option data-file="{{ p[3] }}" data-id="{{ p[0] }}">{{ p[1] }} / {{ p[2] }}</option>
+    {% endfor %}
+  </select>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-view" onclick="viewPayslip()">View</button>
+    <button class="btn-download" onclick="downloadPayslip()">Download</button>
+    <button class="btn-delete" onclick="deletePayslip()">Delete</button>
+  </div>
+</div>
+
+<script>
+function toggleFields(val){
+  document.getElementById("contract_fields").style.display = val=="contract" ? "block" : "none";
+  document.getElementById("payslip_fields").style.display = val=="payslip" ? "block" : "none";
+}
+function viewPayslip(){
+  var o=document.getElementById("payslip_select").options;
+  var f=o[o.selectedIndex].getAttribute("data-file");
+  if(f) window.open("/static/payslips/"+f,"_blank");
+}
+function downloadPayslip(){
+  var o=document.getElementById("payslip_select").options;
+  var f=o[o.selectedIndex].getAttribute("data-file");
+  if(!f) return;
+  var a=document.createElement("a");
+  a.href="/static/payslips/"+f; a.download=f;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function deletePayslip(){
+  var o=document.getElementById("payslip_select").options;
+  var id=o[o.selectedIndex].getAttribute("data-id");
+  if(!id) return;
+  if(confirm("Delete this payslip?")) window.location="/admin/employee/{{ emp_id }}/payslip/"+id+"/delete";
+}
+</script>
+{% endblock %}

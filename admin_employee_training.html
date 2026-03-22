@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.pg-btn:hover{background:#106ebe;}
+.ep-section-title{font-size:14px;font-weight:600;color:#323130;margin:20px 0 12px;}
+.item-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px;}
+.item-card{background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:16px;}
+.item-title{font-size:13px;font-weight:600;color:#323130;margin-bottom:8px;}
+.item-meta{font-size:12px;color:#605e5c;margin-bottom:12px;line-height:1.8;}
+.item-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-view{padding:4px 12px;background:#eff6fc;color:#0078d4;border:1px solid #c7e0f4;border-radius:4px;font-size:12px;text-decoration:none;display:inline-block;}
+.btn-download{padding:4px 12px;background:#dff6dd;color:#107c10;border:1px solid #9fd89f;border-radius:4px;font-size:12px;text-decoration:none;display:inline-block;}
+.btn-delete{padding:4px 12px;background:#fde7e9;color:#a4262c;border:1px solid #f4abba;border-radius:4px;font-size:12px;text-decoration:none;display:inline-block;}
+.btn-sm{padding:4px 10px;background:#f3f2f1;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:12px;text-decoration:none;display:inline-block;}
+.btn-sm:hover{background:#edebe9;}
+.reg-form{display:none;background:#faf9f8;border:1px solid #edebe9;border-radius:6px;padding:20px;max-width:480px;margin-bottom:20px;}
+.reg-form.open{display:block;}
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:12px;color:#605e5c;margin-bottom:4px;font-weight:500;}
+.form-group input,.form-group select{width:100%;height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#fff;outline:none;box-sizing:border-box;}
+.form-group input[type=file]{height:auto;padding:6px 8px;}
+.form-group input:focus,.form-group select:focus{border-color:#0078d4;}
+.form-title{font-size:14px;font-weight:600;color:#323130;margin-bottom:16px;}
+.form-actions{display:flex;gap:8px;margin-top:16px;}
+.btn-cancel{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;}
+.progress-bar{width:100%;height:6px;background:#edebe9;border-radius:3px;overflow:hidden;margin:8px 0;}
+.progress-fill{height:100%;background:#107c10;border-radius:3px;}
+@media(max-width:900px){.item-grid{grid-template-columns:1fr;}}
+</style>
+{% include "employee_tabs.html" %}
+<div class="pg-header">
+  <div class="pg-title">Assigned Trainings</div>
+</div>
+{% if trainings %}
+<div class="item-grid">
+  {% for item in trainings %}
+  <div class="item-card">
+    <div class="item-title">{{ item["title"] }}</div>
+    <div class="item-meta">
+      Category: {{ item["category"] or "-" }}<br>
+      Type: {{ item["content_type"] or "-" }}<br>
+      Status: {{ item["status"] or "Not Started" }}<br>
+      Due: {{ item["due_date"] or "-" }}<br>
+      Progress: {{ item["progress"] or 0 }}%
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:{{ item['progress'] or 0 }}%"></div></div>
+    <div class="item-actions" style="margin-top:8px;">
+      <a class="btn-sm" href="/admin/employee/{{ emp_id }}/training/{{ item['training_id'] }}/progress/25">25%</a>
+      <a class="btn-sm" href="/admin/employee/{{ emp_id }}/training/{{ item['training_id'] }}/progress/50">50%</a>
+      <a class="btn-sm" href="/admin/employee/{{ emp_id }}/training/{{ item['training_id'] }}/progress/75">75%</a>
+      <a class="btn-sm" href="/admin/employee/{{ emp_id }}/training/{{ item['training_id'] }}/progress/100">100%</a>
+    </div>
+    <div class="item-actions" style="margin-top:8px;">
+      {% if item["content_type"] == "video" %}
+        <a class="btn-view" href="/static/trainings/videos/{{ item['file_path'] }}" target="_blank">View</a>
+      {% elif item["content_type"] == "pdf" %}
+        <a class="btn-view" href="/static/trainings/pdfs/{{ item['file_path'] }}" target="_blank">View</a>
+      {% elif item["content_type"] == "slide" %}
+        <a class="btn-view" href="/static/trainings/slides/{{ item['file_path'] }}" target="_blank">View</a>
+      {% endif %}
+      {% if item["progress"] >= 100 and not item["certificate_file"] %}
+        <a class="btn-download" href="/admin/employee/{{ emp_id }}/training/{{ item['training_id'] }}/generate-certificate">Generate Certificate</a>
+      {% endif %}
+      {% if item["certificate_file"] %}
+        <a class="btn-download" href="/static/trainings/certificates/{{ item['certificate_file'] }}" target="_blank">View Certificate</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div style="color:#a19f9d;font-size:13px;">No trainings assigned.</div>
+{% endif %}
+{% endblock %}

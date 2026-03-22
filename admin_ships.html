@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.pg-btn:hover{background:#106ebe;}
+.erp-table-wrap{background:#fff;border:1px solid #edebe9;border-radius:6px;overflow:hidden;}
+.erp-table{width:100%;border-collapse:collapse;}
+.erp-table th{padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#605e5c;background:#faf9f8;border-bottom:1px solid #edebe9;}
+.erp-table td{padding:10px 16px;font-size:13px;color:#323130;border-bottom:1px solid #edebe9;}
+.erp-table tbody tr:last-child td{border-bottom:none;}
+.erp-table tbody tr:hover{background:#f3f2f1;cursor:pointer;}
+@media(max-width:900px){.erp-table-wrap{overflow-x:auto;}.erp-table{white-space:nowrap;}}
+</style>
+<div class="pg-header">
+  <div class="pg-title">Ships in Yard</div>
+  <a href="/admin/ship/new" class="pg-btn">+ Add Ship</a>
+</div>
+<div class="erp-table-wrap"><table class="erp-table">
+<thead><tr><th>ID</th><th>Ship Name</th><th>Tonnage</th><th>Flag</th><th>Berth</th><th>Company</th><th>Arrival</th><th>Departure</th></tr></thead>
+<tbody>
+{% for ship in ships %}
+<tr onclick="window.location='/admin/ship/{{ ship[0] }}'">
+<td style="color:#605e5c;">{{ ship[0] }}</td>
+<td style="font-weight:500;">{{ ship[1] or '' }}</td>
+<td>{{ ship[2] or '' }}</td>
+<td>{{ ship[3] or '' }}</td>
+<td>{{ ship[4] or '' }}</td>
+<td>{{ ship[5] or '' }}</td>
+<td>{{ ship[6] or '' }}</td>
+<td>{{ ship[7] or '' }}</td>
+</tr>
+{% endfor %}
+{% if not ships %}<tr><td colspan="8" style="text-align:center;color:#a19f9d;padding:24px;">No ships in yard.</td></tr>{% endif %}
+</tbody></table></div>
+{% endblock %}

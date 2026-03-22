@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.breadcrumb{font-size:12px;color:#605e5c;margin-bottom:12px;}
+.breadcrumb a{color:#0078d4;text-decoration:none;}
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.pg-btn-outline{height:32px;padding:0 16px;background:#fff;color:#323130;border:1px solid #edebe9;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;}
+.ep-card{background:#fff;border:1px solid #edebe9;border-radius:6px;margin-bottom:16px;}
+.ep-card-header{padding:12px 20px;border-bottom:1px solid #edebe9;font-size:13px;font-weight:600;color:#323130;}
+.ep-card-body{padding:20px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:12px;color:#605e5c;font-weight:500;}
+.form-group input,.form-group select{height:32px;border:1px solid #edebe9;border-radius:4px;padding:0 8px;font-size:13px;color:#323130;background:#fff;box-sizing:border-box;width:100%;outline:none;}
+.form-group input:focus{border-color:#0078d4;}
+.form-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:16px;border-top:1px solid #edebe9;margin-top:4px;}
+</style>
+
+<div class="breadcrumb">
+  <a href="/admin/sales">Sales Management</a> ›
+  <a href="/admin/companies">Companies</a> ›
+  <a href="/admin/companies/{{ company.id }}/edit">{{ company.name }}</a> ›
+  Add Ship
+</div>
+
+<div class="pg-header">
+  <div class="pg-title">Add Ship — {{ company.name }}</div>
+  <a href="/admin/companies/{{ company.id }}/edit" class="pg-btn-outline">Back</a>
+</div>
+
+<div class="ep-card">
+  <div class="ep-card-header">Ship Details</div>
+  <div class="ep-card-body">
+    <form method="post" action="/admin/companies/{{ company.id }}/ships/new">
+      <div class="form-grid">
+        <div class="form-group"><label>Ship Name *</label><input type="text" name="ship_name" required></div>
+        <div class="form-group"><label>Ship Type</label>
+          <select name="ship_type">
+            <option value="">— Select —</option>
+            <option value="Inland">Inland</option>
+            <option value="Inland Tanker">Inland Tanker</option>
+            <option value="Inland Cargo">Inland Cargo</option>
+            <option value="Seagoing">Seagoing</option>
+            <option value="Tanker">Tanker</option>
+            <option value="General Cargo">General Cargo</option>
+            <option value="Dredger">Dredger</option>
+            <option value="Hopper Dredger">Hopper Dredger</option>
+            <option value="Pusher">Pusher</option>
+            <option value="Service Boat">Service Boat</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>IMO Number</label><input type="text" name="imo_number" placeholder="IMO 1234567"></div>
+        <div class="form-group"><label>ENI Number</label><input type="text" name="eni_number" placeholder="ENI 12345678"></div>
+      </div>
+      <div class="form-grid3">
+        <div class="form-group"><label>Flag</label><input type="text" name="flag" placeholder="NL, BE, DE..."></div>
+        <div class="form-group"><label>Tonnage / DWT</label><input type="text" name="tonnage"></div>
+        <div class="form-group"><label></label></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Length (m)</label><input type="number" step="0.01" name="length" placeholder="99.85"></div>
+        <div class="form-group"><label>Beam (m)</label><input type="number" step="0.01" name="beam" placeholder="16.50"></div>
+      </div>
+      <div class="form-footer">
+        <a href="/admin/companies/{{ company.id }}/edit" class="pg-btn-outline">Cancel</a>
+        <button type="submit" class="pg-btn">Save Ship</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

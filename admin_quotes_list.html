@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.pg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.pg-title{font-size:18px;font-weight:600;color:#323130;}
+.pg-btn{height:32px;padding:0 16px;background:#0078d4;color:white;border:none;border-radius:4px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.pg-btn:hover{background:#106ebe;}
+.erp-table-wrap{overflow-x:auto;border:1px solid #edebe9;border-radius:6px;background:#fff;}
+.erp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.erp-table th{background:#faf9f8;color:#605e5c;padding:10px 12px;text-align:left;border-bottom:1px solid #edebe9;font-weight:600;white-space:nowrap;}
+.erp-table td{padding:9px 12px;border-bottom:1px solid #edebe9;color:#323130;vertical-align:middle;}
+.erp-table tbody tr:hover td{background:#f3f2f1;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:500;}
+.b-draft{background:#f3f2f1;color:#605e5c;}
+.b-sent{background:#eff6fc;color:#0078d4;}
+.b-accepted{background:#dff6dd;color:#107c10;}
+.b-rejected{background:#fde7e9;color:#a4262c;}
+.b-revised{background:#fff4ce;color:#835b00;}
+.act-link{color:#0078d4;text-decoration:none;font-size:12px;margin-right:10px;}
+.act-link:hover{text-decoration:underline;}
+</style>
+
+<div class="pg-header">
+  <div class="pg-title">Quotes</div>
+  <a href="/admin/quotes/new" class="pg-btn">+ New Quote</a>
+</div>
+
+<div class="erp-table-wrap">
+  <table class="erp-table">
+    <thead>
+      <tr>
+        <th>Quote No</th>
+        <th>Customer</th>
+        <th>Ship Name</th>
+        <th>Quote Date</th>
+        <th>Due Date</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Ver.</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for q in quotes %}
+    <tr>
+      <td style="font-weight:600;">{{ q.quote_number }}</td>
+      <td>{{ q.customer_name or '-' }}</td>
+      <td>{{ q.ship_name or '-' }}</td>
+      <td>{{ q.quote_date or '-' }}</td>
+      <td>{{ q.due_date or '-' }}</td>
+      <td>€ {{ "{:,.2f}".format(q.total or 0) }}</td>
+      <td>
+        {% if q.status == 'draft' %}<span class="badge b-draft">Draft</span>
+        {% elif q.status == 'sent' %}<span class="badge b-sent">Sent</span>
+        {% elif q.status == 'accepted' %}<span class="badge b-accepted">Accepted</span>
+        {% elif q.status == 'rejected' %}<span class="badge b-rejected">Rejected</span>
+        {% elif q.status == 'revised' %}<span class="badge b-revised">Revised</span>
+        {% else %}<span class="badge b-draft">{{ q.status }}</span>{% endif %}
+      </td>
+      <td style="text-align:center;">{{ q.version or 1 }}</td>
+      <td style="white-space:nowrap;">
+        <a href="/admin/quotes/{{ q.id }}/edit" class="act-link">Edit</a>
+        <a href="/admin/quotes/{{ q.id }}/pdf" class="act-link" target="_blank">PDF</a>
+        <a href="/admin/quotes/{{ q.id }}/revise" class="act-link" onclick="return confirm('Revizyon oluşturulsun mu?')">Revise</a>
+        <a href="/admin/quotes/{{ q.id }}/delete" class="act-link" style="color:#a4262c;" onclick="return confirm('Silinsin mi?')">Del</a>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9" style="text-align:center;color:#a19f9d;padding:30px;">No quotes yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
